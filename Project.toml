@@ -1,7 +1,7 @@
 name = "Graphon"
 uuid = "e0c12bfd-47d7-434e-afb7-632611640ca5"
 authors = ["Jake Grainger", "Charles Dufour"]
-version = "0.1.0"
+version = "0.0.1"
 
 [compat]
 julia = "1.8"
