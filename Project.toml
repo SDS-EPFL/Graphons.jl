@@ -5,6 +5,8 @@ version = "0.0.1"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Integrals = "de52edbc-65ea-441a-8357-d3a637375a31"
+IntegralsCuba = "e00cd5f1-6337-4131-8b37-28b2fe4cd6cb"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 

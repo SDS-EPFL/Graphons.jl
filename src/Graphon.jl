@@ -1,6 +1,6 @@
 module Graphon
 
-using Distributions, LinearAlgebra
+using Distributions, LinearAlgebra, Integrals, IntegralsCuba
 
 abstract type AbstractGraphon end
 
@@ -39,6 +39,7 @@ end
 
 include("sbm.jl")
 include("common_graphon.jl")
+include("subgraph_isomorphism.jl")
 
 export SBM, sample, GraphonFunction
 
