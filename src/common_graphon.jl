@@ -1,6 +1,6 @@
 struct GraphonFunction{F <: Function} <: AbstractGraphon
     graphon_function::F
-    function GraphonFunction(f::F) where {F<:Function}
+    function GraphonFunction(f::F) where {F <: Function}
         # maybe test that f takes two arguments and returns a Float64 ?
         new{typeof(f)}(f)
     end

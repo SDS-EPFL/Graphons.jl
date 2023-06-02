@@ -2,9 +2,7 @@ module Graphon
 
 using Distributions, LinearAlgebra
 
-
 abstract type AbstractGraphon end
-
 
 function _rand(s::AbstractGraphon, i, j)
     return Int(rand() < _probs(s, i, j))
@@ -35,8 +33,9 @@ function draw_non_exchangeable(s::AbstractGraphon, n)
 end
 
 draw_exchangeable(s::AbstractGraphon, n) = draw(s, n, rand(Uniform(0, 1), n))
-sample(s::AbstractGraphon, n, exchangeable = true) = exchangeable ? draw_exchangeable(s, n) : draw_non_exchangeable(s, n)
-
+function sample(s::AbstractGraphon, n, exchangeable = true)
+    exchangeable ? draw_exchangeable(s, n) : draw_non_exchangeable(s, n)
+end
 
 include("sbm.jl")
 include("common_graphon.jl")

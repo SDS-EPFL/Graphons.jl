@@ -15,5 +15,5 @@ end
 
 function _probs(s::SBM, i, j)
     return s.θ[findfirst(x -> i <= x, s.cumulative_size),
-        findfirst(x -> j <= x, s.cumulative_size)]
+               findfirst(x -> j <= x, s.cumulative_size)]
 end
