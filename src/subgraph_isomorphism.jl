@@ -1,14 +1,18 @@
 """
-    General non-optimized subgraph isomorphism algorithm.
+    subgraph_density(graphon, subgraph_edge_list; method = CubaCuhre(), kwargs...)
 
-    ``t_{\\text {hom }}(f, g)=\\int_{[0,1]^k} \\prod_{(i, j) \\in E(f)}
-    w_g\\left(u_i, u_j\\right) du_{1: k}``
+General non-optimized subgraph isomorphism algorithm.
 
-    Compute the density of a subgraph in a graphon by integrating over the graphon. This
-    does not try to optimize the integration (e.g. factorization, block model, subgraph
-    structure, etc.)
+```math
+    t_{\\text {hom }}(F, w)=\\int_{[0,1]^k} \\prod\\limits_{(i, j) \\in E(F)}
+    w\\left(u_i, u_j\\right) du_{1: k}
+```
 
-    Works for any subgraph, but is slow for large subgraphs.
+Compute the density of a subgraph ``F`` in a graphon ``w`` by integrating over the graphon.
+This does not try to optimize the integration (e.g. factorization, block model, subgraph
+structure, etc.)
+
+Works for any subgraph, but is slow for large subgraphs.
 """
 function subgraph_density(graphon::AbstractGraphon,
                           subgraph_edge_list::Vector{Tuple{Int, Int}}; method = CubaCuhre(),
