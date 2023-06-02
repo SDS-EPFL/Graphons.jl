@@ -1,26 +1,16 @@
 module Graphon
 
-struct SBM
-    θ::Matrix{Float64}
-    size::Vector{Float64}
-    cumulative_size::Vector{Float64}
+using Distributions, LinearAlgebra
+
+
+abstract type AbstractGraphon end
+
+
+function _rand(s::AbstractGraphon, i, j)
+    return Int(rand() < _probs(s, i, j))
 end
 
-function SBM(θ::Matrix{Float64}, groupsize::Vector{Float64})
-    @assert size(θ, 1) == size(θ, 2)
-    @assert length(groupsize) == size(θ, 1)
-    @assert all(0 .<= θ .<= 1)
-    @assert all(0 .<= groupsize .<= 1)
-    @assert sum(groupsize) ≈ 1
-    return SBM(θ, groupsize, cumsum(groupsize))
-end
-
-function _rand(s::SBM, i, j)
-    return Int(rand() < s.θ[findfirst(x -> i <= x, s.cumulative_size),
-                   findfirst(x -> j <= x, s.cumulative_size)])
-end
-
-function draw(s::SBM, n, latent)
+function draw(s::AbstractGraphon, n, latent)
     A = Matrix{Int}(undef, n, n)
     for i in 1:n
         A[i, i] = 0
@@ -29,10 +19,10 @@ function draw(s::SBM, n, latent)
             A[j, i] = A[i, j]
         end
     end
-    return A
+    return Symmetric(A)
 end
 
-function draw_non_exchangeable(s::SBM, n)
+function draw_non_exchangeable(s::AbstractGraphon, n)
     A = Matrix{Int}(undef, n, n)
     for i in 1:n
         A[i, i] = 0
@@ -44,9 +34,13 @@ function draw_non_exchangeable(s::SBM, n)
     return A
 end
 
-draw_exchangeable(s::SBM, n) = draw(s, n, rand(Uniform(0, 1), n))
-sample(s::SBM, n) = draw_exchangeable(s, n)
+draw_exchangeable(s::AbstractGraphon, n) = draw(s, n, rand(Uniform(0, 1), n))
+sample(s::AbstractGraphon, n, exchangeable = true) = exchangeable ? draw_exchangeable(s, n) : draw_non_exchangeable(s, n)
 
-export SBM, sample
+
+include("sbm.jl")
+include("common_graphon.jl")
+
+export SBM, sample, GraphonFunction
 
 end
