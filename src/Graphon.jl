@@ -12,9 +12,9 @@ end
 
 function draw(s::AbstractGraphon, n, latent)
     A = Matrix{Int}(undef, n, n)
-    for i in 1:n
+    @inbounds for i in 1:n
         A[i, i] = 0
-        for j in (i + 1):n
+        @inbounds for j in (i + 1):n
             A[i, j] = _rand(s, latent[i], latent[j])
             A[j, i] = A[i, j]
         end
@@ -24,14 +24,14 @@ end
 
 function draw_non_exchangeable(s::AbstractGraphon, n)
     A = Matrix{Int}(undef, n, n)
-    for i in 1:n
+    @inbounds for i in 1:n
         A[i, i] = 0
-        for j in (i + 1):n
+        @inbounds for j in (i + 1):n
             A[i, j] = _rand(s, i / n, j / n)
             A[j, i] = A[i, j]
         end
     end
-    return A
+    return Symmetric(A)
 end
 
 draw_exchangeable(s::AbstractGraphon, n) = draw(s, n, rand(Uniform(0, 1), n))
