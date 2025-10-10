@@ -9,9 +9,7 @@ function SimpleContinuousGraphon(f::F, M=BitMatrix) where {F}
 end
 
 
-function _rand!(rng::AbstractRNG, f::SimpleContinuousGraphon{M}, A::M) where {M}
-    n = size(A, 1)
-    ξs = Base.rand(rng, n)
+function _rand!(rng::AbstractRNG, f::SimpleContinuousGraphon{M}, A::M, ξs) where {M}
     fill!(A, false)
     for j in axes(A, 2)
         for i in axes(A, 1)

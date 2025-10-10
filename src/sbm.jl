@@ -14,9 +14,7 @@ function SBM(θ, sizes)
     return SBM(θ, sizes, cumsizes)
 end
 
-function _rand!(rng::AbstractRNG, f::SBM, A::BitMatrix)
-    n = size(A, 1)
-    ξs = Base.rand(rng, n)
+function _rand!(rng::AbstractRNG, f::SBM, A::BitMatrix, ξs)
     latents = map(x -> findfirst(y -> x <= y, f.cumsize), ξs)
     fill!(A, false)
     for j in axes(A, 2)
