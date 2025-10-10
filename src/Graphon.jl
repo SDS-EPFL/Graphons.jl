@@ -64,10 +64,13 @@ end
 
 include("graphonfunction.jl")
 include("sbm.jl")
+include("decorated_sbm.jl")
+
 
 
 
 export rand
 export SBM, SimpleContinuousGraphon
+export DecoratedSBM
 
 end
