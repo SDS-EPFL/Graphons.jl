@@ -2,7 +2,6 @@ module Graphon
 
 using Random
 using SparseArrays
-import SuiteSparseGraphBLAS: AbstractGBArray
 import Base.rand
 
 """
@@ -34,8 +33,6 @@ function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
 end
 
 
-
-
 sample(f::AbstractGraphon, n::Int) = sample(Random.default_rng(), f, n)
 sample(f::AbstractGraphon, ξ::AbstractVector) = sample(Random.default_rng(), f, ξ)
 
@@ -48,18 +45,6 @@ function sample(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M}
     return _rand!(rng, f, M(undef, n, n), ξs)
 end
 
-
-# potentialy move to extension for SuiteSparseGraphBLAS
-
-function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M<:AbstractGBArray}
-    return _rand!(rng, f, M(n, n), Base.rand(rng, n))
-end
-
-
-function sample(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M<:AbstractGBArray}
-    n = length(ξs)
-    return _rand!(rng, f, M(n, n), ξs)
-end
 
 
 include("graphonfunction.jl")
