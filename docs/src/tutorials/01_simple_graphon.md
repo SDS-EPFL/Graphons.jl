@@ -8,13 +8,22 @@ This tutorial introduces the concept of a graphon, demonstrates how to sample a 
 
 ## What is a Graphon?
 
-A graphon (or graph function) is a symmetric, measurable function $$W: [0, 1]^2 \to [0, 1]$$.
+A graphon (or graph function) is a symmetric, measurable function
+
+```math
+W: [0, 1]^2 \to [0, 1].
+```
+
 A graph with $n$ nodes is then generated in the following manner:
  For each node, $i$ a latent variable $\xi_i \sim U[0,1]$ is drawn independently of the others
 
 It serves as a generative model for random graphs. Think of it as a continuous and more general version of a stochastic block model.
 
-In simple terms, each node `i` in a graph is assigned a latent (unobserved) position $ξ_i \in [0, 1]$. The probability of an edge existing between two nodes `i` and `j` is then given by the graphon function evaluated at their latent positions: $$P[A_{ij} = 1 \mid \xi_i,\xi_j] = W(\xi_i,\xi_j).$$
+In simple terms, each node `i` in a graph is assigned a latent (unobserved) position $ξ_i \in [0, 1]$. The probability of an edge existing between two nodes `i` and `j` is then given by the graphon function evaluated at their latent positions:
+
+```math
+P[A_{ij} = 1 \mid \xi_i,\xi_j] = W(\xi_i,\xi_j).
+```
 
 This is an example of a simple graphon, which is used to generate simple binary undirected graphs. In subsequent tutorials, we will show that we can generalise this idea to much more general kind of graphs (weighted, signed, multiplex, temporal,...).
 

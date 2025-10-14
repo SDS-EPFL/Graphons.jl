@@ -28,14 +28,34 @@ abstract type AbstractGraphon{T,M} end
 const SimpleGraphon{M} = AbstractGraphon{Bool,M} where {M<:AbstractArray{Bool}}
 const WeightedGraphon{M} = AbstractGraphon{Float64,M} where {M<:AbstractArray{Float64}}
 
+
+# Sampling from a graphon
+
+## random unobserved latents
+
+
+
 rand(f::AbstractGraphon, n::Int) = rand(Random.default_rng(), f, n)
 
+
+"""
+    rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
+
+    Generates a random graph according to the graphon `f` with `n` nodes.
+    The latent positions are drawn uniformly at random in [0,1].
+
+    The generated graph is of type `M` and has edge type `T`.
+
+"""
 function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
     return _rand!(rng, f, make_empty_graph(M, n), Base.rand(rng, n))
 end
 
 """
     _rand!(rng::AbstractRNG, f::AbstractGraphon{T,M}, A::M, ξs)
+
+    Generates a random graph according to the graphon `f` and the latent positions `ξs`.
+    The generated graph is stored in `A`.
 
 !!! warning
     This function expects that `A` is an empty graph of the right size and type. It does not
@@ -44,9 +64,23 @@ end
 function _rand!(rng::AbstractRNG, f::AbstractGraphon, A, ξs) end
 
 
+
+## known latents
+
+
+
 sample(f::AbstractGraphon, n::Int) = sample(Random.default_rng(), f, n)
 sample(f::AbstractGraphon, ξ::AbstractVector) = sample(Random.default_rng(), f, ξ)
 
+
+"""
+    sample(rng::AbstractRNG, f::AbstractGraphon, n::Int)
+
+    Generates a random graph according to the graphon `f` with `n` nodes.
+    The latent positions are drawn uniformly at random in [0,1].
+
+    The generated graph is of type `M` and has edge type `T`.
+"""
 function sample(rng::AbstractRNG, f::AbstractGraphon, n::Int)
     return sample(rng, f, 0:1/n:1)
 end

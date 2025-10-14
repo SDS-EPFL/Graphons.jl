@@ -32,7 +32,7 @@ To sample with your own graph type, you need to redefine the function
 `make_empty_graph(::Type{M}, n)`, such that it returns an empty graph of type
 `M` with `n` nodes and no edges.
 
-!!! warning "Design Choice"
+!!! info "Design Choice"
 
     Since for decorated graphs it is sometimes hard to know in advance what will be the default
     representation of a non-edge, we have left that choice to the user via the `make_empty_graph`
