@@ -14,7 +14,6 @@ end
 
 function _rand!(rng::AbstractRNG, f::DecoratedSBM{D,M}, A::M, ξs) where {D,M}
     latents = map(x -> findfirst(y -> x <= y, f.cumsize), ξs)
-    fill!(A, zero(eltype(A)))
     for j in axes(A, 2)
         for i in axes(A, 1)
             if i <= j

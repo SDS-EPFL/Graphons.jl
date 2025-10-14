@@ -52,11 +52,3 @@ rand(f_sparse, 41)
 
 # and we can see the impact of ordering the latents
 sample(f_sparse, 0:0.025:1)
-
-
-# We can also use the `SuiteSparseGraphBLAS` package to sample large sparse graphs efficiently:
-
-using SuiteSparseGraphBLAS
-M2 = GBMatrix{Bool,Bool}
-f_sparseBLAS = SimpleContinuousGraphon(W, M2)
-rand(f_sparseBLAS, 41);

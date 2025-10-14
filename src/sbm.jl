@@ -21,15 +21,21 @@ end
 
 function _rand!(rng::AbstractRNG, f::SBM, A::BitMatrix, ξs)
     latents = map(x -> _convert_latent_to_block(f, x), ξs)
-    fill!(A, false)
     for j in axes(A, 2)
         for i in axes(A, 1)
             if i <= j
                 A[i, j] = A[j, i]
-            else
-                A[i, j] = Base.rand(rng) < f.θ[latents[i], latents[j]]
+            elseif Base.rand(rng) < f.θ[latents[i], latents[j]]
+                A[i, j] = one(eltype(A))
             end
         end
     end
     return A
+end
+
+
+function empirical_graphon(f::SimpleContinuousGraphon, k::Int)
+    ξs = range(0, stop=1, length=k)
+    sizes = fill(1 / k, k)
+    return SBM(f.(ξs, ξs), sizes)
 end

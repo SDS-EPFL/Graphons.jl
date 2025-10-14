@@ -34,6 +34,15 @@ function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
     return _rand!(rng, f, make_empty_graph(M, n), Base.rand(rng, n))
 end
 
+"""
+    _rand!(rng::AbstractRNG, f::AbstractGraphon{T,M}, A::M, ξs)
+
+!!! warning
+    This function expects that `A` is an empty graph of the right size and type. It does not
+    try to clean it up before filling it.
+"""
+_rand!
+
 
 sample(f::AbstractGraphon, n::Int) = sample(Random.default_rng(), f, n)
 sample(f::AbstractGraphon, ξ::AbstractVector) = sample(Random.default_rng(), f, ξ)

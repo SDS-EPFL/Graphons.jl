@@ -37,6 +37,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Tutorials" => ["First steps" => "tutorials/01_simple_graphon.md"],
+        "Design" => ["Graph representation" => "graphs_type.md"],
     ],
 )
 
