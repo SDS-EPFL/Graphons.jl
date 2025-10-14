@@ -1,3 +1,5 @@
+## default empty graph
+
 function make_empty_graph(::Type{M}, n) where {M<:Matrix}
     return zeros(eltype(M), n, n)
 end
@@ -19,4 +21,14 @@ end
 
 function make_empty_graph(::Type{M}, n) where {M<:SparseArrays.AbstractSparseMatrixCSC}
     return spzeros(eltype(M), n, n)
+end
+
+
+## default clearing of graph
+function clear_graph!(A::AbstractMatrix)
+    fill!(A, zero(eltype(A)))
+end
+
+function clear_graph!(A::SparseArrays.AbstractSparseMatrixCSC)
+    droptol!(A, Inf)
 end
