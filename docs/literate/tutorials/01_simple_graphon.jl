@@ -24,7 +24,7 @@
 # P[A_{ij} = 1 \mid \xi_i,\xi_j] = W(\xi_i,\xi_j).
 # ```
 
-# This is an example of a simple graphon, which is used to generate simple binary undirected graphs. In subsequent tutorials, we will show that we can generalise this idea to much more general kind of graphs (weighted, signed, multiplex, temporal,...).
+# This is an example of a simple graphon, which is used to generate simple binary undirected graphs. In subsequent tutorials, we will show that we can generalise this idea to much more general kind of graphs (weighted, signed, multiplex...).
 
 
 # ## Using `Graphon.jl` to deal with Graphon
