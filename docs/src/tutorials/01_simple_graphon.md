@@ -42,6 +42,33 @@ f = SimpleContinuousGraphon(W);
 nothing #hide
 ````
 
+We can also easily request a coarser version of the graphon, in the form of a stochastic block model with `k` blocks. This is done using the `empirical_graphon` function:
+
+````@example 01_simple_graphon
+step_graphon = empirical_graphon(f, 10);
+nothing #hide
+````
+
+We can visualize this graphon using the any backend available in `Makie.jl` package. Here we will use `CairoMakie.jl`:
+
+````@example 01_simple_graphon
+using CairoMakie
+
+fig = Figure(size=(800, 380))
+ax = Axis(fig[1, 1], aspect=1)
+ax2 = Axis(fig[1, 2], aspect=1)
+xlims!(ax, 0, 1)# hide
+ylims!(ax, 0, 1) # hide
+xlims!(ax2, 0, 1) # hide
+ylims!(ax2, 0, 1) # hide
+hm = heatmap!(ax, f, colormap=:binary, colorrange=(0, 1))
+hm2 = heatmap!(ax2, step_graphon, colormap=:binary, colorrange=(0, 1))
+Colorbar(fig[1, 3], hm)
+fig
+````
+
+## Sampling Graphs from a Graphon
+
 now that we have defined our graphon, we can sample graphs of different sizes with it:
 
 ````@example 01_simple_graphon

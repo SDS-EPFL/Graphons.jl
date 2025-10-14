@@ -98,9 +98,9 @@ include("decorated_sbm.jl")
 
 
 
-
 export rand, sample
-export SBM, SimpleContinuousGraphon
+export SBM, SimpleContinuousGraphon, empirical_graphon
 export DecoratedSBM
+
 
 end

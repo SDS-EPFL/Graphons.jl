@@ -36,5 +36,8 @@ end
 function empirical_graphon(f::SimpleContinuousGraphon, k::Int)
     ξs = range(0, stop=1, length=k)
     sizes = fill(1 / k, k)
-    return SBM(f.(ξs, ξs), sizes)
+    # dirty hack to ensure sum(sizes) == 1
+    sizes[end] += 1 - sum(sizes)
+    θ = [f(ξs[i], ξs[j]) for i in 1:k, j in 1:k]
+    return SBM(θ, sizes)
 end
