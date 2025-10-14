@@ -23,8 +23,11 @@ function _rand!(rng::AbstractRNG, f::SimpleContinuousGraphon{M}, A::M, ξs) wher
     return A
 end
 
-function sample_from_latents!(rng::AbstractRNG, f::SimpleContinuousGraphon{M}, A::M, ξs) where {M}
-    fill!(A, false)
+
+
+function _rand!(rng::AbstractRNG, f::SimpleContinuousGraphon{M}, A::M, ξs) where {M<:SparseArrays.AbstractSparseMatrixCSC}
+    A.rowval .= zero(eltype(A))
+    dropzeros!(A)
     for j in axes(A, 2)
         for i in axes(A, 1)
             if i <= j

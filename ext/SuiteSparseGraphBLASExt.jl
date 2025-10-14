@@ -1,17 +1,11 @@
 module SuiteSparseGraphBLASExt
 
 using Random
-import SuiteSparseGraphBLAS: AbstractGBArray
-import Graphon: rand, _rand!, AbstractGraphon
+import SuiteSparseGraphBLAS: GBMatrix
+import Graphons: rand, _rand!, AbstractGraphon, make_empty_graph
 
-function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M<:AbstractGBArray}
-    return _rand!(rng, f, M(n, n), Base.rand(rng, n))
-end
-
-
-function sample(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M<:AbstractGBArray}
-    n = length(ξs)
-    return _rand!(rng, f, M(n, n), ξs)
+function make_empty_graph(::Type{GB}, n) where {GB<:GBMatrix}
+    return GB(n, n)
 end
 
 end

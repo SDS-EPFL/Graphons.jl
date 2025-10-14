@@ -1,24 +1,25 @@
-name = "Graphon"
+name = "Graphons"
 uuid = "e0c12bfd-47d7-434e-afb7-632611640ca5"
 version = "0.0.1"
-authors = ["Jake Grainger", "Charles Dufour"]
+authors = ["Charles Dufour", "Jake Grainger"]
 
 [deps]
+ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
-
 [weakdeps]
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 SuiteSparseGraphBLAS = "c2e53296-7b14-11e9-1210-bddfa8111e1d"
-
 
 [extensions]
 MakieExt = "Makie"
 SuiteSparseGraphBLASExt = "SuiteSparseGraphBLAS"
 
+[compat]
+ArgCheck = "2.5.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

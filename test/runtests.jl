@@ -1,6 +1,6 @@
-using Graphon
+using Graphons
 using Test
 
-@testset "Graphon.jl" begin
+@testset "Graphons.jl" begin
     # Write your tests here.
 end

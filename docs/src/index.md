@@ -1,14 +1,15 @@
 ```@meta
-CurrentModule = Graphon
+CurrentModule = Graphons
 ```
 
 # Graphon
 
-Documentation for [Graphon](https://github.com/JakeGrainger/Graphon.jl).
+Documentation for [Graphons](https://github.com/SDS-EPFL/Graphons.jl).
 
 ```@index
+
 ```
 
 ```@autodocs
-Modules = [Graphon]
+Modules = [Graphons]
 ```

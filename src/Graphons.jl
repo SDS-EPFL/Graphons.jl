@@ -1,8 +1,9 @@
-module Graphon
+module Graphons
 
 using Random
 using SparseArrays
 import Base.rand
+using ArgCheck
 
 """
     AbstractGraphon{T,M}
@@ -19,7 +20,8 @@ graph with boolean edges can be represented by
     - a sparse matrix of Bool -> M = SparseMatrixCSC{Bool,Int}
     - an adjacency list -> M = Vector{Vector{Int}}
 
-for now we assume that M is such that T <: eltype(M) and that it can be created with M(undef, n, n)
+for now we assume that M is such that T <: eltype(M) and that it can be created with
+    `make_empty_graph(M, n)` which creates an empty graph of size n x n
 """
 abstract type AbstractGraphon{T,M} end
 
@@ -29,7 +31,7 @@ const WeightedGraphon{M} = AbstractGraphon{Float64,M} where {M<:AbstractArray{Fl
 rand(f::AbstractGraphon, n::Int) = rand(Random.default_rng(), f, n)
 
 function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
-    return _rand!(rng, f, M(undef, n, n), Base.rand(rng, n))
+    return _rand!(rng, f, make_empty_graph(M, n), Base.rand(rng, n))
 end
 
 
@@ -42,19 +44,19 @@ end
 
 function sample(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M}
     n = length(ξs)
-    return _rand!(rng, f, M(undef, n, n), ξs)
+    return _rand!(rng, f, make_empty_graph(M, n), ξs)
 end
 
 
-
-include("graphonfunction.jl")
+include("utils.jl")
+include("graphon_function.jl")
 include("sbm.jl")
 include("decorated_sbm.jl")
 
 
 
 
-export rand
+export rand, sample
 export SBM, SimpleContinuousGraphon
 export DecoratedSBM
 

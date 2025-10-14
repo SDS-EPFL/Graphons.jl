@@ -1,4 +1,4 @@
-using Graphon
+using Graphons
 using Documenter
 
 using Literate
@@ -21,25 +21,26 @@ for dir_path in filter(isdir, readdir(joinpath(@__DIR__, "literate"), join=true)
     end
 end
 
-DocMeta.setdocmeta!(Graphon, :DocTestSetup, :(using Graphon); recursive=true)
+DocMeta.setdocmeta!(Graphons, :DocTestSetup, :(using Graphons); recursive=true)
 
 makedocs(;
-    modules=[Graphon],
+    modules=[Graphons],
     authors="Charles Dufour,Jake Grainger",
-    repo="https://github.com/SDS-EPFL/Graphon.jl/blob/{commit}{path}#{line}",
-    sitename="Graphon.jl",
+    repo="https://github.com/SDS-EPFL/Graphons.jl/blob/{commit}{path}#{line}",
+    sitename="Graphons.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://SDS-EPFL.github.io/Graphon.jl",
+        canonical="https://SDS-EPFL.github.io/Graphons.jl",
         edit_link="main",
         assets=String[],
     ),
     pages=[
         "Home" => "index.md",
+        "Tutorials" => ["First steps" => "tutorials/01_simple_graphon.md"],
     ],
 )
 
 deploydocs(;
-    repo="github.com/SDS-EPFL/Graphon.jl",
+    repo="github.com/SDS-EPFL/Graphons.jl",
     devbranch="main",
 )
