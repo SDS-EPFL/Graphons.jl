@@ -71,7 +71,7 @@ A_medium = rand(f, 11)
 # In some settings we might be interested in knowing the latents for each of the nodes (e.g. for simulations). This is also possible easily:
 
 ξs = 0:0.1:1
-A_ordered = sample(f, ξs)
+A_ordered = sample_graph(f, ξs)
 
 
 # ### Specifying the type of the sampled graph
@@ -82,4 +82,4 @@ f_sparse = SimpleContinuousGraphon(W, M)
 rand(f_sparse, 41)
 
 # and we can see the impact of ordering the latents
-sample(f_sparse, 0:0.025:1)
+sample_graph(f_sparse, 0:0.025:1)

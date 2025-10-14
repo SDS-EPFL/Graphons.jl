@@ -12,7 +12,7 @@ end
 function _rand!(rng::AbstractRNG, f::SimpleContinuousGraphon{M}, A::M, ξs) where {M}
     for j in axes(A, 2)
         for i in axes(A, 1)
-            if Base.rand(rng) < f(ξs[i], ξs[j])
+            if i < j && Base.rand(rng) < f(ξs[i], ξs[j])
                 A[i, j] = one(eltype(A))
                 A[j, i] = A[i, j]
             end

@@ -81,7 +81,7 @@ In some settings we might be interested in knowing the latents for each of the n
 
 ````@example 01_simple_graphon
 ξs = 0:0.1:1
-A_ordered = sample(f, ξs)
+A_ordered = sample_graph(f, ξs)
 ````
 
 ### Specifying the type of the sampled graph
@@ -96,7 +96,7 @@ rand(f_sparse, 41)
 and we can see the impact of ordering the latents
 
 ````@example 01_simple_graphon
-sample(f_sparse, 0:0.025:1)
+sample_graph(f_sparse, 0:0.025:1)
 ````
 
 ---

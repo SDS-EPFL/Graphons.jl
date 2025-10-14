@@ -2,8 +2,11 @@ module Graphons
 
 using Random
 using SparseArrays
+using StaticArrays
 import Base.rand
 using ArgCheck
+import Distributions: DiscreteMultivariateDistribution, UnivariateDistribution, MultivariateDistribution
+
 
 """
     AbstractGraphon{T,M}
@@ -69,23 +72,23 @@ function _rand!(rng::AbstractRNG, f::AbstractGraphon, A, ξs) end
 
 
 
-sample(f::AbstractGraphon, n::Int) = sample(Random.default_rng(), f, n)
-sample(f::AbstractGraphon, ξ::AbstractVector) = sample(Random.default_rng(), f, ξ)
+sample_graph(f::AbstractGraphon, n::Int) = sample_graph(Random.default_rng(), f, n)
+sample_graph(f::AbstractGraphon, ξ::AbstractVector) = sample_graph(Random.default_rng(), f, ξ)
 
 
 """
-    sample(rng::AbstractRNG, f::AbstractGraphon, n::Int)
+    sample_graph(rng::AbstractRNG, f::AbstractGraphon, n::Int)
 
     Generates a random graph according to the graphon `f` with `n` nodes.
     The latent positions are drawn uniformly at random in [0,1].
 
     The generated graph is of type `M` and has edge type `T`.
 """
-function sample(rng::AbstractRNG, f::AbstractGraphon, n::Int)
-    return sample(rng, f, 0:1/n:1)
+function sample_graph(rng::AbstractRNG, f::AbstractGraphon, n::Int)
+    return sample_graph(rng, f, range(0, 1, length=n))
 end
 
-function sample(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M}
+function sample_graph(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M}
     n = length(ξs)
     return _rand!(rng, f, make_empty_graph(M, n), ξs)
 end
@@ -94,13 +97,14 @@ end
 include("utils.jl")
 include("graphon_function.jl")
 include("sbm.jl")
+include("decorated_graphon.jl")
 include("decorated_sbm.jl")
 
 
 
-export rand, sample
+export rand, sample_graph
 export SBM, SimpleContinuousGraphon, empirical_graphon
-export DecoratedSBM
+export DecoratedSBM, DecoratedGraphon
 
 
 end

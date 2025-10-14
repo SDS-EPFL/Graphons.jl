@@ -1,7 +1,10 @@
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Graphons = "e0c12bfd-47d7-434e-afb7-632611640ca5"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
+MVBernoulli = "2b8086c1-fe4f-4323-9725-553dafa0e9d7"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SuiteSparseGraphBLAS = "c2e53296-7b14-11e9-1210-bddfa8111e1d"
