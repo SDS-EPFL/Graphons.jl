@@ -39,9 +39,9 @@ end
 
 !!! warning
     This function expects that `A` is an empty graph of the right size and type. It does not
-    try to clean it up before filling it.
+    try to clean it up before filling it. See `make_empty_graph` for more details.
 """
-_rand!
+function _rand!(rng::AbstractRNG, f::AbstractGraphon, A, ξs) end
 
 
 sample(f::AbstractGraphon, n::Int) = sample(Random.default_rng(), f, n)

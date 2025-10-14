@@ -9,6 +9,25 @@ default), but other types are also possible.
 
     This section is a work in progress. More graph types will be added in the future.
 
+## Design Philosophy
+
+One of the main difficulties is that we cannot know what value is used to
+represent a non-edge in a decorated graph type. For example, for a simple graph
+encoded in a `BitMatrix`, a non-edge is represented by `false`. But for a
+weighted graph encoded in a `Matrix{Float64}`, there is no necessarily a
+default value for a non-edge. It could be `0.0`, `NaN`, or any other value.
+
+To circumvent this issue, we have decided to let the user define how to create
+an empty graph of a given type if the default is not suitable. This means that
+the function to randomly sample a graph with preallocated memory now expects
+that the input graph is empty and of the right size.
+
+```@docs
+Graphons._rand!
+```
+
+## Custom Graph Types
+
 To sample with your own graph type, you need to redefine the function
 `make_empty_graph(::Type{M}, n)`, such that it returns an empty graph of type
 `M` with `n` nodes and no edges.
