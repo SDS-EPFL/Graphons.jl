@@ -34,7 +34,6 @@ This allows us to create a `Graphon` object that will sample graphs of type
 
 ```julia
 using SuiteSparseGraphBLAS
-M2 = GBMatrix{Bool,Bool}
-f_sparseBLAS = SimpleContinuousGraphon((x,y)-> 0.1, M2)
-rand(f_sparseBLAS, 41)
+f_sparseBLAS = SimpleContinuousGraphon((x,y)-> 0.1, GBMatrix{Bool})
+A = rand(f_sparseBLAS, 41)
 ```

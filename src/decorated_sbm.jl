@@ -16,11 +16,8 @@ function _rand!(rng::AbstractRNG, f::DecoratedSBM{D,M}, A::M, ξs) where {D,M}
     latents = map(x -> findfirst(y -> x <= y, f.cumsize), ξs)
     for j in axes(A, 2)
         for i in axes(A, 1)
-            if i <= j
-                A[i, j] = A[j, i]
-            else
-                A[i, j] = rand(rng, f.θ[latents[i], latents[j]])
-            end
+            A[i, j] = rand(rng, f.θ[latents[i], latents[j]])
+            A[j, i] = A[i, j]
         end
     end
     return A
