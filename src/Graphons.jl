@@ -32,73 +32,10 @@ const SimpleGraphon{M} = AbstractGraphon{Bool,M} where {M<:AbstractArray{Bool}}
 const WeightedGraphon{M} = AbstractGraphon{Float64,M} where {M<:AbstractArray{Float64}}
 
 
-# Sampling from a graphon
-
-## random unobserved latents
-
-
-
-rand(f::AbstractGraphon, n::Int) = rand(Random.default_rng(), f, n)
-
-
-"""
-    rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
-
-    Generates a random graph according to the graphon `f` with `n` nodes.
-    The latent positions are drawn uniformly at random in [0,1].
-
-    The generated graph is of type `M` and has edge type `T`.
-
-"""
-function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
-    return _rand!(rng, f, make_empty_graph(M, n), Base.rand(rng, n))
-end
-
-"""
-    _rand!(rng::AbstractRNG, f::AbstractGraphon{T,M}, A::M, ξs)
-
-    Generates a random graph according to the graphon `f` and the latent positions `ξs`.
-    The generated graph is stored in `A`.
-
-!!! warning
-    This function expects that `A` is an empty graph of the right size and type. It does not
-    try to clean it up before filling it. See `make_empty_graph` for more details.
-"""
-function _rand!(rng::AbstractRNG, f::AbstractGraphon, A, ξs) end
-
-
-
-## known latents
-
-
-
-sample_graph(f::AbstractGraphon, n::Int) = sample_graph(Random.default_rng(), f, n)
-sample_graph(f::AbstractGraphon, ξ::AbstractVector) = sample_graph(Random.default_rng(), f, ξ)
-
-
-"""
-    sample_graph(rng::AbstractRNG, f::AbstractGraphon, n::Int)
-
-    Generates a random graph according to the graphon `f` with `n` nodes.
-    The latent positions are drawn uniformly at random in [0,1].
-
-    The generated graph is of type `M` and has edge type `T`.
-"""
-function sample_graph(rng::AbstractRNG, f::AbstractGraphon, n::Int)
-    return sample_graph(rng, f, range(0, 1, length=n))
-end
-
-function sample_graph(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M}
-    n = length(ξs)
-    return _rand!(rng, f, make_empty_graph(M, n), ξs)
-end
-
-
 include("utils.jl")
-include("graphon_function.jl")
-include("sbm.jl")
+include("sampling.jl")
+include("simple_graphon.jl")
 include("decorated_graphon.jl")
-include("decorated_sbm.jl")
 
 
 

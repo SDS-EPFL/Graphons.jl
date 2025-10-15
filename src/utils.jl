@@ -13,6 +13,11 @@ function make_empty_graph(::Type{M}, n) where {M<:AbstractMatrix}
 end
 
 
+function _convert_latent_to_block(sbm, ξ)
+    return findfirst(y -> ξ <= y, sbm.cumsize)
+end
+
+
 # specializations
 
 function make_empty_graph(::Type{BitMatrix}, n)
