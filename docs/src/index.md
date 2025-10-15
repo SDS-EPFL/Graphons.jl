@@ -38,7 +38,9 @@ A = rand(sbm, 200)
 
 - **Simple Graphons**: Work with continuous probability functions on [0,1]²
 - **Stochastic Block Models**: Discrete graphons with block structure
-- **Decorated Graphons**: Rich edge attributes using Distributions.jl
+- **Decorated Graphons**: Rich edge attributes using Distributions.jl or custom
+  distributions
+- **Extensible**: Easily add custom distribution types with just 2 methods
 - **Flexible Storage**: Support for dense, sparse, and GraphBLAS matrices
 - **Type Stability**: Optimized performance through Julia's type system
 

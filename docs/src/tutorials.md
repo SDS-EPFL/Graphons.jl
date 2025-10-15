@@ -19,3 +19,7 @@ Graphons.jl.
   Explore decorated graphons for modeling multiplex networks with multiple edge
   types or layers, including marginal probabilities and cross-layer
   correlations.
+
+- [Custom Distributions](tutorials/04_custom_distributions.md) - Learn how to
+  implement custom distribution types for specialized edge attributes and
+  sampling logic beyond what Distributions.jl provides.

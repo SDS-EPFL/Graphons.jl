@@ -56,3 +56,8 @@ using SuiteSparseGraphBLAS
 f_sparseBLAS = SimpleContinuousGraphon((x,y)-> 0.1, GBMatrix{Bool})
 A = rand(f_sparseBLAS, 41)
 ```
+
+## Custom Distribution Types
+
+For information on implementing custom distribution types to use with
+`DecoratedGraphon`, see the [Custom Distribution Types](@ref) page.
