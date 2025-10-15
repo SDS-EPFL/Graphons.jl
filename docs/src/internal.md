@@ -1,5 +1,0 @@
-# Index
-
-```@autodocs
-Modules = [Graphons]
-```

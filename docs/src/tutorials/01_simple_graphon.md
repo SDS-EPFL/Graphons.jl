@@ -2,102 +2,188 @@
 EditURL = "../../literate/tutorials/01_simple_graphon.jl"
 ```
 
-#  A Simple Graphon Introduction
+# Getting Started with Graphons
 
-This tutorial introduces the concept of a graphon, demonstrates how to sample a graph from one using `Graphon.jl`.
+This tutorial introduces graphons and shows how to use Graphons.jl to sample random graphs.
+We'll cover the basic concepts, create simple graphon models, and visualize the results.
 
 ## What is a Graphon?
 
-A graphon (or graph function) is a symmetric, measurable function
+A **graphon** (short for "graph function") is a mathematical object that represents the limit
+of large random graphs. Formally, it's a symmetric, measurable function:
 
 ```math
-W: [0, 1]^2 \to [0, 1].
+W: [0, 1]^2 \to [0, 1]
 ```
 
-A graph with $n$ nodes is then generated in the following manner:
- For each node, $i$ a latent variable $\xi_i \sim U[0,1]$ is drawn independently of the others
+Think of a graphon as a **continuous generalization** of a stochastic block model (SBM).
+Instead of discrete blocks, every point in the unit square [0,1]² has an associated probability.
 
-It serves as a generative model for random graphs. Think of it as a continuous and more general version of a stochastic block model.
+### How Graphs are Generated from Graphons
 
-In simple terms, each node `i` in a graph is assigned a latent (unobserved) position $ξ_i \in [0, 1]$. The probability of an edge existing between two nodes `i` and `j` is then given by the graphon function evaluated at their latent positions:
+To sample a random graph with `n` nodes from a graphon `W`:
+
+1. **Assign latent positions**: For each node `i`, draw a random position ξᵢ ~ Uniform[0,1]
+2. **Sample edges**: For each pair of nodes `(i,j)`, the probability of an edge is:
 
 ```math
-P[A_{ij} = 1 \mid \xi_i,\xi_j] = W(\xi_i,\xi_j).
+P(\text{edge between } i \text{ and } j) = W(\xi_i, \xi_j)
 ```
 
-This is an example of a simple graphon, which is used to generate simple binary undirected graphs. In subsequent tutorials, we will show that we can generalise this idea to much more general kind of graphs (weighted, signed, multiplex...).
+The latent positions ξᵢ represent hidden "types" or "communities" of nodes.
+Nodes with similar latent positions are more (or less) likely to connect,
+depending on the graphon function W.
 
-## Using `Graphon.jl` to deal with Graphon
+## Setup
 
-We will be interested in a common graphon encountered in the litterature: $W(x,y)=x*y$. This graphon is a `Graphon.`
+Let's load the packages we'll need:
 
 ````@example 01_simple_graphon
 using Graphons
+using Random
+using CairoMakie
+````
 
-function W(x, y)
+## Example 1: A Simple Quadratic Graphon
+
+We'll start with a classic example: W(x,y) = x·y
+
+This graphon creates graphs where nodes with higher latent positions
+(closer to 1) are more likely to have edges. Nodes near 0 are sparse,
+while nodes near 1 form a dense subgraph.
+
+First, define the graphon function:
+
+````@example 01_simple_graphon
+function W_quadratic(x, y)
     return x * y
 end
-
-f = SimpleContinuousGraphon(W);
-nothing #hide
 ````
 
-We can also easily request a coarser version of the graphon, in the form of a stochastic block model with `k` blocks. This is done using the `empirical_graphon` function:
+Create a SimpleContinuousGraphon object:
 
 ````@example 01_simple_graphon
-step_graphon = empirical_graphon(f, 10);
-nothing #hide
+graphon = SimpleContinuousGraphon(W_quadratic)
 ````
 
-We can visualize this graphon using the any backend available in `Makie.jl` package. Here we will use `CairoMakie.jl`:
+Now we can evaluate the edge probability at any point:
 
 ````@example 01_simple_graphon
-using CairoMakie
+@show graphon(0.2, 0.8)  # Low probability
+@show graphon(0.9, 0.9)  # High probability
+nothing # hide
+````
 
-fig = Figure(size=(800, 380))
-ax = Axis(fig[1, 1], aspect=1)
-ax2 = Axis(fig[1, 2], aspect=1)
-xlims!(ax, 0, 1)# hide
-ylims!(ax, 0, 1) # hide
-xlims!(ax2, 0, 1) # hide
-ylims!(ax2, 0, 1) # hide
-hm = heatmap!(ax, f, colormap=:binary, colorrange=(0, 1))
-hm2 = heatmap!(ax2, step_graphon, colormap=:binary, colorrange=(0, 1))
-Colorbar(fig[1, 3], hm)
+## Visualizing the Graphon
+
+Let's visualize the graphon function as a heatmap. Brighter colors indicate
+higher edge probabilities.
+
+````@example 01_simple_graphon
+fig = Figure(size=(500, 450))
+ax = Axis(fig[1, 1],
+    xlabel="Latent position x",
+    ylabel="Latent position y",
+    title="Graphon W(x,y) = x·y",
+    aspect=1)
+hm = heatmap!(ax, graphon, colormap=:binary, colorrange=(0, 1))
+Colorbar(fig[1, 2], hm, label="Edge probability")
 fig
 ````
 
-## Sampling Graphs from a Graphon
+The diagonal pattern shows that nodes with similar (and high) latent
+positions are very likely to connect.
 
-now that we have defined our graphon, we can sample graphs of different sizes with it:
+## Sampling Random Graphs
+
+Now let's sample actual graphs from this graphon!
+
+### Random Latent Positions
+
+The simplest way is to use `rand`, which automatically draws random
+latent positions:
 
 ````@example 01_simple_graphon
-using Random
-A_medium = rand(f, 11)
+Random.seed!(42)
+A_random = rand(graphon, 100);
+nothing #hide
 ````
 
-The above call will generate 10 random latent variables, and then sample the graph according to these random latents.
-In some settings we might be interested in knowing the latents for each of the nodes (e.g. for simulations). This is also possible easily:
+This creates a 100×100 adjacency matrix. Let's visualize it:
 
 ````@example 01_simple_graphon
-ξs = 0:0.1:1
-A_ordered = sample_graph(f, ξs)
+fig = Figure(size=(500, 450))
+ax = Axis(fig[1, 1],
+    title="Random graph (n=100)",
+    aspect=1)
+heatmap!(ax, A_random, colormap=:binary)
+fig
 ````
 
-### Specifying the type of the sampled graph
+Notice how edges cluster in the bottom-right corner? That's because
+nodes with high latent positions (drawn randomly) tend to connect
+more densely.
+
+### Fixed Latent Positions
+
+Sometimes we want **reproducible** graphs or to see the structure more clearly.
+Use `sample_graph` with explicit latent positions:
+
+````@example 01_simple_graphon
+ξs = 0.0:0.01:1.0  # Evenly spaced from 0 to 1
+A_ordered = sample_graph(graphon, ξs)
+
+fig = Figure(size=(500, 450))
+ax = Axis(fig[1, 1],
+    title="Ordered graph (n=$(length(ξs)))",
+    aspect=1)
+heatmap!(ax, A_ordered, colormap=:binary)
+fig
+````
+
+With ordered latents, the structure is crystal clear! The density
+increases smoothly from top-left (sparse) to bottom-right (dense).
+
+## Working with Sparse Matrices
+
+For large, sparse graphs, use sparse matrix representations for efficiency:
 
 ````@example 01_simple_graphon
 using SparseArrays
-M = SparseMatrixCSC{Bool,Int}
-f_sparse = SimpleContinuousGraphon(W, M)
-rand(f_sparse, 41)
 ````
 
-and we can see the impact of ordering the latents
+Create a sparse-matrix graphon:
 
 ````@example 01_simple_graphon
-sample_graph(f_sparse, 0:0.025:1)
+graphon_sparse = SimpleContinuousGraphon(W_quadratic, SparseMatrixCSC{Bool,Int})
 ````
+
+Sample a large sparse graph:
+
+````@example 01_simple_graphon
+A_sparse = rand(graphon_sparse, 1000)
+
+println("Matrix type: ", typeof(A_sparse))
+println("Number of nonzeros: ", nnz(A_sparse))
+println("Density: ", nnz(A_sparse) / (1000^2) * 100, "%")
+````
+
+## Key Takeaways
+
+- **Graphons** are continuous functions W: [0,1]² → [0,1] that generate random graphs
+- **Latent positions** ξᵢ ∈ [0,1] determine each node's "type"
+- Edge probability between nodes i and j is W(ξᵢ, ξⱼ)
+- Use `rand(graphon, n)` for random graphs with random latents
+- Use `sample_graph(graphon, ξs)` for controlled/reproducible graphs
+- Use `empirical_graphon(graphon, k)` to discretize into k-block SBMs
+- Sparse matrices are efficient for large, low-density graphs
+
+## Next Steps
+
+- For more on **Stochastic Block Models** with community structures and core-periphery
+  patterns, see the next tutorial on Block Models
+- For **multiplex networks** and graphs with rich edge attributes (weights, types, etc.),
+  see the Decorated Graphons tutorial
 
 ---
 

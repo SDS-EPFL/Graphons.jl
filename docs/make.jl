@@ -1,6 +1,6 @@
 using Graphons
 using Documenter
-
+using Random
 using Literate
 
 LITERATE_INPUT = joinpath(@__DIR__, "literate")
@@ -36,10 +36,14 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "Tutorials" => ["First steps" => "tutorials/01_simple_graphon.md",
-            "Multiplex networks" => "tutorials/02_multiplex_networks.md"],
+        "API Reference" => "api.md",
+        "Tutorials" => [
+            "tutorials.md",
+            "Getting Started with Graphons" => "tutorials/01_simple_graphon.md",
+            "Stochastic Block Models" => "tutorials/03_block_models.md",
+            "Multiplex Networks" => "tutorials/02_multiplex_networks.md"
+        ],
         "Design" => ["Graph representation" => "graphs_type.md"],
-        "Index" => "internal.md",
     ],
 )
 

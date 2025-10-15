@@ -2,170 +2,320 @@
 EditURL = "../../literate/tutorials/02_multiplex_networks.jl"
 ```
 
-# Multiplex networks as finitely-decorated graphons (2 layers)
+# Multiplex Networks with Decorated Graphons
 
-This tutorial shows how a 2-layer multiplex network can be expressed as a
-finitely-decorated graphon with four categories `K = {0,1,2,3}` corresponding to:
+In this tutorial, we'll learn how to model **multiplex networks** (graphs with multiple
+types of edges or layers) using **decorated graphons**. This is a powerful extension
+that goes beyond simple binary graphs.
 
-* `0` = no edge on either layer (00)
-* `1` = edge on layer 1 only (10)
-* `2` = edge on layer 2 only (01)
-* `3` = edge on both layers (11)
+We'll build a 2-layer network where:
+- Each edge can exist on layer 1, layer 2, both layers, or neither
+- The probabilities depend on the latent positions of nodes
+- We can analyze correlations between layers
 
-We'll
-1. define a smooth decorated graphon `W(x,y)` returning a 4-probability vector over these categories,
-2. sample a multiplex network with two binary layers,
-3. visualise marginals and cross-layer correlation induced by `W`.
+## Motivation: Why Decorated Graphons?
+
+Real-world networks often have multiple types of relationships:
+- **Social networks**: friendships, professional connections, family ties
+- **Brain networks**: anatomical connections, functional correlations
+- **Transportation**: roads, railways, air routes
+
+A **decorated graphon** returns not just edge probabilities, but entire **distributions**
+over edge types or weights. This lets us model rich, structured networks.
 
 ## Setup
+
+Load the packages we'll need:
 
 ````@example 02_multiplex_networks
 using Random
 using Distributions
 using StaticArrays
-using SparseArrays
 using Graphons
 using CairoMakie
+
+Random.seed!(42)
 ````
 
-## A 4-category decorated graphon for a 2-layer multiplex
-We define a function $W = (w^{00},w^{10},w^{01},w^{11})$ that returns  a distribution on `K = {0,1,2,3}`
+## Understanding the Four-Category Model
 
-with $\mathbb{P}(K = k | X = x, Y = y) = w^{(k)}(x,y)$
+For a 2-layer multiplex network, each pair of nodes (i,j) can be in one of
+**four categories**:
+
+| Category | Binary | Layer 1 | Layer 2 | Interpretation |
+|----------|--------|---------|---------|----------------|
+| 0        | 00     | No      | No      | No connection  |
+| 1        | 10     | Yes     | No      | Only layer 1   |
+| 2        | 01     | No      | Yes     | Only layer 2   |
+| 3        | 11     | Yes     | Yes     | Both layers    |
+
+Instead of returning a single edge probability, our graphon will return
+a **discrete probability distribution** over these 4 categories.
+
+## Defining a Decorated Graphon
+
+Let's create a graphon function that returns interesting structure.
+The function will assign probabilities to each of the four categories:
+
+- **Category 1** (layer 1 only): Probability increases with distance between x and y
+- **Category 2** (layer 2 only): Periodic pattern based on position synchronization
+- **Category 3** (both layers): Probability increases when both x and y are similar and high
+- **Category 0** (no edge): Whatever probability remains
+
+Here's the implementation:
 
 ````@example 02_multiplex_networks
-function W(x, y)
+function W_multiplex(x, y)
     ps = zeros(4)
-    ps[2] = sqrt(abs(x - y)) / 2
-    ps[3] = abs(sin(2π * x) * sin(2π * y)) / 2
-    ps[4] = min(x, y) / 4
-    ps[1] = 1 - sum(ps[2:4])
+    ps[2] = sqrt(abs(x - y)) / 2           # layer 1 only
+    ps[3] = abs(sin(2π * x) * sin(2π * y)) / 2  # layer 2 only
+    ps[4] = min(x, y) / 4                   # both layers
+    ps[1] = 1 - sum(ps[2:4])                # no edge
     return DiscreteNonParametric(0:3, SVector{4}(ps))
 end
-
-g = DecoratedGraphon(W);
-nothing #hide
 ````
 
-## Visualising the four category probabilities
-
-We plot the four surfaces $w^{(ℓ)}(x,y)$ for ℓ ∈ {0,1,2,3}.
+Create the decorated graphon:
 
 ````@example 02_multiplex_networks
-fig = Figure(size=(350, 300)) # hide
-ax1 = Axis(fig[1, 1], title="p00(x,y)", aspect=1) # hide
-ax2 = Axis(fig[1, 2], title="p10(x,y)", aspect=1) # hide
-ax3 = Axis(fig[2, 1], title="p01(x,y)", aspect=1) # hide
-ax4 = Axis(fig[2, 2], title="p11(x,y)", aspect=1) # hide
-xlims!.([ax1, ax2, ax3, ax4], 0, 1) # hide
-ylims!.([ax1, ax2, ax3, ax4], 0, 1) # hide
-hidexdecorations!.([ax1, ax2, ax3, ax4]) # hide
-hideydecorations!.([ax1, ax2, ax3, ax4]) # hide
-heatmap!(ax1, g, 1, colormap=:binary, colorrange=(0, 1)) # hide
-heatmap!(ax2, g, 2, colormap=:binary, colorrange=(0, 1)) # hide
-heatmap!(ax3, g, 3, colormap=:binary, colorrange=(0, 1)) # hide
-heatmap!(ax4, g, 4, colormap=:binary, colorrange=(0, 1)) # hide
-Colorbar(fig[:, 3], colormap=:binary, colorrange=(0, 1)) # hide
-resize_to_layout!(fig)# hide
-fig# hide
+graphon_multiplex = DecoratedGraphon(W_multiplex)
 ````
 
-## Sampling a multiplex network from W
+Let's check what it returns:
 
-Given `W`, we can sample an adjacency *category* for each unordered pair (i,j)
-and then split categories into two binary adjacency matrices `A1` and `A2`.
+````@example 02_multiplex_networks
+@show dist = graphon_multiplex(0.3, 0.7)
+@show probs(dist)  # Probabilities for categories 0, 1, 2, 3
+nothing # hide
+````
+
+## Visualizing Category Probabilities
+
+Let's visualize how the probability of each category varies across
+the latent space [0,1]²:
+
+````@example 02_multiplex_networks
+fig = Figure(size=(800, 700))
+
+labels = [
+    "Category 0\n(No edges)",
+    "Category 1\n(Layer 1 only)",
+    "Category 2\n(Layer 2 only)",
+    "Category 3\n(Both layers)"
+]
+
+for i in 1:4
+    row = (i - 1) ÷ 2 + 1
+    col = (i - 1) % 2 + 1
+
+    ax = Axis(fig[row, col],
+        title=labels[i],
+        xlabel="Position x",
+        ylabel="Position y",
+        aspect=1)
+
+    hm = heatmap!(ax, graphon_multiplex, i,
+        colormap=:binary,
+        colorrange=(0, 1))
+end
+
+Colorbar(fig[:, 3], colormap=:binary, colorrange=(0, 1),
+    label="Probability")
+
+fig
+````
+
+**Interpretation**:
+- **Top-left**: Most pairs have no edges (high p₀₀)
+- **Top-right**: Layer 1 edges increase with distance (p₁₀)
+- **Bottom-left**: Layer 2 has periodic structure (p₀₁)
+- **Bottom-right**: Both layers appear for similar, high-position nodes (p₁₁)
+
+## Sampling a Multiplex Network
+
+Now let's sample an actual network with 300 nodes:
 
 ````@example 02_multiplex_networks
 n = 300
-Random.seed!(42)
-A = sample_graph(g, n);
-nothing #hide
+A_categories = sample_graph(graphon_multiplex, n)
+
+println("Matrix type: ", typeof(A_categories))
+println("Matrix size: ", size(A_categories))
+println("Categories present: ", unique(A_categories))
 ````
 
-## Visualising the categories
+The matrix contains category labels (0, 1, 2, 3) for each edge pair.
+
+## Visualizing the Category Structure
+
+Let's see how the categories are distributed in the sampled network:
 
 ````@example 02_multiplex_networks
-fig = Figure(size=(300, 300)) #hide
-ax1 = Axis(fig[1, 1], aspect=1) # hide
-ax2 = Axis(fig[1, 2], aspect=1) # hide
-ax3 = Axis(fig[2, 1], aspect=1) # hide
-ax4 = Axis(fig[2, 2], aspect=1) # hide
-hidedecorations!.([ax1, ax2, ax3, ax4]) # hide
-A_inter = zeros(Bool, n, n) # hide
-for (c, ax) in zip(0:3, (ax1, ax2, ax3, ax4)) # hide
-    indices = findall(x -> x == c, A)  # indices with category c # hide
-    A_inter .= false # hide
-    A_inter[indices] .= true # hide
-    heatmap!(ax, A_inter, colormap=:binary, colorrange=(0, 1)) # hide
-end # hide
-resize_to_layout!(fig) # hide
-fig # hide
+fig = Figure(size=(900, 800))
+
+for (idx, (cat, label)) in enumerate(zip(0:3, labels))
+    row = (idx - 1) ÷ 2 + 1
+    col = (idx - 1) % 2 + 1
+
+    ax = Axis(fig[row, col],
+        title=label * " (n=$(count(==(cat), A_categories)))",
+        aspect=1)
+    hidedecorations!(ax)
+
+    A_binary = zeros(Bool, n, n)
+    A_binary[A_categories.==cat] .= true
+
+    heatmap!(ax, A_binary, colormap=:binary)
+end
+
+fig
 ````
 
-## Visualising the sampled layers
+Notice how each category creates a different pattern!
+
+## Extracting Individual Layers
+
+For analysis, we often want separate adjacency matrices for each layer:
 
 ````@example 02_multiplex_networks
-indices_layer1 = findall(x -> x in (1, 3), A)  # hide
-indices_layer2 = findall(x -> x in (2, 3), A)  # hide
-
-A1 = zeros(Bool, n, n) # hide
-A2 = zeros(Bool, n, n) # hide
-A1[indices_layer1] .= true # hide
-A2[indices_layer2] .= true # hide
+A_layer1 = zeros(Bool, n, n)
+A_layer1[A_categories.∈Ref([1, 3])] .= true # Layer 1: present in categories 1 and 3
 
 
+A_layer2 = zeros(Bool, n, n)
+A_layer2[A_categories.∈Ref([2, 3])] .= true # Layer 2: present in categories 2 and 3
 
-fig = Figure(size=(300, 200)) # hide
-ax1 = Axis(fig[1, 1], title="Layer 1", aspect=1) # hide
-ax2 = Axis(fig[1, 2], title="Layer 2", aspect=1) # hide
-hidedecorations!.([ax1, ax2]) # hide
-heatmap!(ax1, A1, colormap=:binary, colorrange=(0, 1)) # hide
-heatmap!(ax2, A2, colormap=:binary, colorrange=(0, 1)) # hide
-resize_to_layout!(fig) # hide
-fig # hide
+
+println("Layer 1 density: ", sum(A_layer1) / (n^2) * 100, "%")
+println("Layer 2 density: ", sum(A_layer2) / (n^2) * 100, "%")
+println("Overlap (both layers): ", sum(A_layer1 .& A_layer2) / (n^2) * 100, "%")
 ````
 
-## From categories to marginals and correlation
+Visualize the two layers:
 
-For the two Bernoulli layers, we can estimate, for each (i,j), the *model*
-marginals and correlation induced by `W`. In practice we only observe one draw,
-but for visualisation we map $(x,y)\rightarrow (p_1,p_2,corr)$ over a grid.
+````@example 02_multiplex_networks
+fig = Figure(size=(900, 400))
+
+ax1 = Axis(fig[1, 1],
+    title="Layer 1 (Distance-based)",
+    aspect=1)
+ax2 = Axis(fig[1, 2],
+    title="Layer 2 (Periodic)",
+    aspect=1)
+
+hidedecorations!(ax1)
+hidedecorations!(ax2)
+
+heatmap!(ax1, A_layer1, colormap=:binary)
+heatmap!(ax2, A_layer2, colormap=:binary)
+
+fig
+````
+
+## Advanced: Analyzing Marginals and Correlations
+
+We can go beyond categories and think about the **marginal probabilities**
+for each layer and their **correlation**.
+
+For this, we'll use the [MVBernoulli](https://github.com/dufourc1/MVBernoulli.jl)
+package to convert category probabilities into a multivariate Bernoulli distribution.
+The category probabilities `[p00, p10, p01, p11]` map to a joint probability table
+for two binary variables:
 
 ````@example 02_multiplex_networks
 using MVBernoulli
 
-function w_mvbern(x, y)
-    MVBernoulli.from_tabulation([probs(W(x, y))...])
+function W_mvbernoulli(x, y)
+    cat_probs = probs(W_multiplex(x, y))
+    return MVBernoulli.from_tabulation([cat_probs...])
 end
 
-g_mvbern = DecoratedGraphon(w_mvbern);
-
-sbm = empirical_graphon(g_mvbern, 10);
-
-
-get_marginals(d, k) = marginals(d)[k]
-get_correlation(d) = correlation_matrix(d)[1, 2]
-
-
-p1 = [get_marginals(g_mvbern(x, y), 1) for x in 0:0.01:1, y in 0:0.01:1]
-p2 = [get_marginals(g_mvbern(x, y), 2) for x in 0:0.01:1, y in 0:0.01:1]
-corr = [get_correlation(g_mvbern(x, y)) for x in 0:0.01:1, y in 0:0.01:1]
-
-#
-
-fig = Figure(size=(800, 350)) # hide
-ax1 = Axis(fig[1, 1], title="p1(x,y)", aspect=1) # hide
-ax2 = Axis(fig[1, 2], title="p2(x,y)", aspect=1) # hide
-ax3 = Axis(fig[1, 3], title="corr(x,y)", aspect=1) # hide
-hidexdecorations!.([ax1, ax2, ax3]) # hide
-hideydecorations!.([ax1, ax2, ax3]) # hide
-hm1 = heatmap!(ax1, p1, colormap=:binary, colorrange=(0, 1)) # hide
-heatmap!(ax2, p2, colormap=:binary, colorrange=(0, 1)) # hide
-hm3 = heatmap!(ax3, corr, colormap=:balance, colorrange=(-1, 1)) # hide
-Colorbar(fig[2, 1:2], hm1, vertical=false, width=Relative(0.5)) # hide
-Colorbar(fig[2, 3], hm3, vertical=false) # hide
-fig # hide
+graphon_mvb = DecoratedGraphon(W_mvbernoulli)
 ````
+
+Now we can compute marginal probabilities and correlation:
+
+````@example 02_multiplex_networks
+# Create a grid to evaluate the graphon
+grid_size = 101
+x_range = range(0, 1, length=grid_size)
+
+# Marginal probability that layer 1 has an edge
+p1 = [marginals(graphon_mvb(x, y))[1] for x in x_range, y in x_range]
+
+# Marginal probability that layer 2 has an edge
+p2 = [marginals(graphon_mvb(x, y))[2] for x in x_range, y in x_range]
+
+# Correlation between layers
+corr = [correlation_matrix(graphon_mvb(x, y))[1, 2] for x in x_range, y in x_range]
+
+# Visualize:
+
+fig = Figure(size=(900, 350))
+
+ax1 = Axis(fig[1, 1],
+    title="P(Layer 1 edge)",
+    aspect=1)
+ax2 = Axis(fig[1, 2],
+    title="P(Layer 2 edge)",
+    aspect=1)
+ax3 = Axis(fig[1, 3],
+    title="Correlation",
+    aspect=1)
+hidedecorations!.([ax1, ax2, ax3])
+hm1 = heatmap!(ax1, p1, colormap=:binary, colorrange=(0, 1))
+hm2 = heatmap!(ax2, p2, colormap=:binary, colorrange=(0, 1))
+hm3 = heatmap!(ax3, corr, colormap=:RdBu, colorrange=(-1, 1))
+
+Colorbar(fig[2, 1:2], hm1, vertical=false,
+    label="Probability", width=Relative(0.6), flipaxis=false)
+Colorbar(fig[2, 3], hm3, vertical=false,
+    label="Correlation", width=Relative(0.9), flipaxis=false)
+
+fig
+````
+
+**Interpretation**:
+- **Left**: Layer 1 has higher density in the top-right (high positions)
+- **Middle**: Layer 2 has periodic structure with multiple dense regions
+- **Right**: Positive correlation (red) where both layers are active,
+  negative correlation (blue) where they anti-correlate
+
+## Creating Block Models for Multiplex Networks
+
+Just like simple graphons, we can discretize decorated graphons into
+block models for computational efficiency:
+
+````@example 02_multiplex_networks
+sbm_multiplex = empirical_graphon(graphon_mvb, 10)
+
+println("Block model type: ", typeof(sbm_multiplex))
+println("Number of blocks: ", length(sbm_multiplex.size))
+
+# Sample from the block model:
+A_sbm = sample_graph(sbm_multiplex, 200);
+nothing #hide
+````
+
+## Key Takeaways
+
+- **Decorated graphons** return distributions instead of probabilities
+- **Multiplex networks** can be modeled with discrete distributions over edge categories
+- Category probabilities can encode complex layer interactions
+- We can analyze marginal probabilities and correlations between layers
+- All the same tools work: `rand`, `sample_graph`, `empirical_graphon`
+- The `MVBernoulli` package helps analyze correlations in binary multiplex networks
+
+## Extensions
+
+Decorated graphons can model many other structures:
+- **Weighted networks**: Use continuous distributions (Normal, Exponential, etc.)
+- **Signed networks**: Positive and negative edges with distributions
+- **Temporal networks**: Edge timing distributions
+- **Attributed graphs**: Node or edge features from distributions
+
+The flexibility of decorated graphons makes them a powerful tool for
+complex network modeling!
 
 ---
 
