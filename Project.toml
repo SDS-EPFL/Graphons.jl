@@ -19,6 +19,7 @@ MakieExt = "Makie"
 SuiteSparseGraphBLASExt = "SuiteSparseGraphBLAS"
 
 [compat]
+julia = "1.10"
 StaticArrays = "1.9.15"
 
 [extras]
