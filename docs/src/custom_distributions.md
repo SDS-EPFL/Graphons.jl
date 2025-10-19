@@ -1,4 +1,4 @@
-# Custom Distribution Types
+# [Custom Distribution Types](@id custom_dist_design)
 
 When using `DecoratedGraphon`, the graphon function returns a distribution
 object that is sampled to generate edge values. While Graphons.jl is designed
@@ -21,8 +21,8 @@ These are the minimal requirements for a distribution to work with
 
 For better integration with the package, you may also want to implement:
 
-- **`Distributions.params(d::D)`** - Return the parameters of the distribution
-  (for display/debugging)
+- **`StatsAPI.params(d::D)`** - Return the parameters of the distribution (for
+  display/debugging and interface with plotting recipes)
 - **`Base.show(io::IO, d::D)`** - Custom string representation
 
 ## Example: Custom Discrete Distribution
@@ -84,7 +84,7 @@ A = rand(graphon, 50)  # Sample a 50×50 graph
 ```
 
 For a complete working example with visualization, see the
-[Custom Distributions](@ref) tutorial.
+[Custom Distributions for Decorated Graphons](@ref) tutorial.
 
 ## Notes on Type Inference
 
