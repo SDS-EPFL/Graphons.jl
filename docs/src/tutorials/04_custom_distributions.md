@@ -14,6 +14,7 @@ We'll cover:
 - Using custom distributions in decorated graphons
 - A practical example with network edge weights
 
+See [Custom Distribution Types](@ref custom_dist_design) for more details on implementing custom distributions.
 ## Setup
 
 ````@example 04_custom_distributions
@@ -21,6 +22,7 @@ using Graphons
 using Random
 using CairoMakie
 using Statistics
+using StatsAPI
 
 Random.seed!(42)
 ````
@@ -77,6 +79,14 @@ Implement the required eltype method
 Base.eltype(::CustomCategorical{T}) where T = T
 ````
 
+Add StatsAPI.params method for automatic parameter extraction and plotting
+
+````@example 04_custom_distributions
+function StatsAPI.params(d::CustomCategorical)
+    return d.probabilities
+end
+````
+
 Optional: nice display
 
 ````@example 04_custom_distributions
@@ -100,6 +110,7 @@ samples = [rand(dist) for _ in 1:1000]
 println("Distribution: ", dist)
 println("Sample mean: ", mean(samples), " (expected: ", sum(dist.values .* dist.probabilities), ")")
 println("Sample frequencies: ", [count(==(i), samples) for i in 1:3])
+println("Parameters: ", StatsAPI.params(dist))
 ````
 
 ## Example 2: Position-Dependent Edge Types
@@ -161,6 +172,24 @@ fig
 Notice how strong edges (type 3) cluster along the diagonal (similar positions),
 while weak edges (type 1) are more common far from the diagonal!
 
+We can compare the above plots with the underlying probabilities from the graphon:
+
+````@example 04_custom_distributions
+fig = Figure(size=(1200, 400))
+
+# Show the three edge types separately
+for (i, (edge_type, label)) in enumerate(zip([1, 2, 3], ["Weak", "Medium", "Strong"]))
+    ax = Axis(fig[1, i],
+        title="$label Edges (type=$edge_type)",
+        aspect=1)
+    hidedecorations!(ax)
+
+    heatmap!(ax, graphon_strength, k=i, res=0.001, colormap=:binary)
+end
+
+fig
+````
+
 ## Example 3: Custom Weighted Distribution
 
 Let's create a custom distribution for continuous edge weights that aren't
@@ -194,6 +223,10 @@ Base.eltype(::TruncatedPowerLaw) = Float64
 
 function Base.show(io::IO, d::TruncatedPowerLaw)
     print(io, "TruncatedPowerLaw(α=", d.α, ", range=[", d.x_min, ", ", d.x_max, "])")
+end
+
+function StatsAPI.params(d::TruncatedPowerLaw)
+    return (d.α, d.x_min, d.x_max)
 end
 ````
 
@@ -231,6 +264,19 @@ ax2 = Axis(fig[1, 2],
     xlabel="Edge Weight",
     ylabel="Frequency")
 hist!(ax2, vec(A_powerlaw), bins=50, color=(:blue, 0.5))
+
+fig
+````
+
+and compare to the underlying graphon
+
+````@example 04_custom_distributions
+fig = Figure(size=(450, 400))
+ax1 = Axis(fig[1, 1],
+    title="α",
+    aspect=1)
+hidedecorations!(ax1)
+heatmap!(ax1, graphon_powerlaw, colormap=:viridis)
 
 fig
 ````

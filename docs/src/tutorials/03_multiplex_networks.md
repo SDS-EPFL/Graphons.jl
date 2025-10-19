@@ -114,7 +114,7 @@ for i in 1:4
         ylabel="Position y",
         aspect=1)
 
-    hm = heatmap!(ax, graphon_multiplex, i,
+    hm = heatmap!(ax, graphon_multiplex, k=i,
         colormap=:binary,
         colorrange=(0, 1))
 end

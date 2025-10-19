@@ -42,6 +42,7 @@ Random.seed!(42)
 #
 # Let's create a network with two equal-sized communities:
 
+
 θ_assort2 = [0.8 0.1; 0.1 0.8]
 sizes_assort2 = [0.5, 0.5]
 
@@ -52,14 +53,12 @@ sbm_assort2 = SBM(θ_assort2, sizes_assort2)
 fig = Figure(size=(800, 350))
 ax1 = Axis(fig[1, 1],
     title="Block Probability Matrix",
-    xlabel="Block",
-    ylabel="Block",
     aspect=1)
 ax2 = Axis(fig[1, 2],
     title="Sampled Graph (n=200)",
     aspect=1)
 
-heatmap!(ax1, θ_assort2, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_assort2, colormap=:binary, colorrange=(0, 1))
 hidedecorations!(ax2)
 
 A_assort2 = sample_graph(sbm_assort2, 200)
@@ -76,8 +75,8 @@ fig
 # Let's create a more complex structure with three communities of different sizes:
 
 θ_assort3 = [0.9 0.1 0.05;
-             0.1 0.8 0.1;
-             0.05 0.1 0.85]
+    0.1 0.8 0.1;
+    0.05 0.1 0.85]
 sizes_assort3 = [0.3, 0.4, 0.3]
 
 sbm_assort3 = SBM(θ_assort3, sizes_assort3)
@@ -86,14 +85,12 @@ A_assort3 = sample_graph(sbm_assort3, 200)
 fig = Figure(size=(800, 350))
 ax1 = Axis(fig[1, 1],
     title="3-Block Probability Matrix",
-    xlabel="Block",
-    ylabel="Block",
     aspect=1)
 ax2 = Axis(fig[1, 2],
     title="Sampled Graph (n=200)",
     aspect=1)
 
-heatmap!(ax1, θ_assort3, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_assort3, colormap=:binary, colorrange=(0, 1))
 hidedecorations!(ax2)
 heatmap!(ax2, A_assort3, colormap=:binary)
 
@@ -109,7 +106,7 @@ fig
 # that primarily connects to the core, not to itself.
 
 θ_cp = [0.8 0.4;    # Core is dense, core-periphery has medium connectivity
-        0.4 0.1]     # Periphery is sparse
+    0.4 0.1]     # Periphery is sparse
 sizes_cp = [0.3, 0.7]  # Small core (30%), large periphery (70%)
 
 sbm_cp = SBM(θ_cp, sizes_cp)
@@ -118,14 +115,12 @@ A_cp = sample_graph(sbm_cp, 200)
 fig = Figure(size=(800, 350))
 ax1 = Axis(fig[1, 1],
     title="Core-Periphery Structure",
-    xlabel="Block",
-    ylabel="Block",
     aspect=1)
 ax2 = Axis(fig[1, 2],
     title="Sampled Graph (n=200)",
     aspect=1)
 
-heatmap!(ax1, θ_cp, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_cp, colormap=:binary, colorrange=(0, 1))
 hidedecorations!(ax2)
 heatmap!(ax2, A_cp, colormap=:binary)
 
@@ -141,9 +136,9 @@ fig
 # We can create hierarchical networks with multiple levels of organization:
 
 θ_hier = [0.9 0.6 0.2 0.1;
-          0.6 0.9 0.1 0.2;
-          0.2 0.1 0.9 0.5;
-          0.1 0.2 0.5 0.9]
+    0.6 0.9 0.1 0.2;
+    0.2 0.1 0.9 0.5;
+    0.1 0.2 0.5 0.9]
 sizes_hier = [0.25, 0.25, 0.25, 0.25]
 
 sbm_hier = SBM(θ_hier, sizes_hier)
@@ -159,7 +154,7 @@ ax2 = Axis(fig[1, 2],
     title="Sampled Graph (n=200)",
     aspect=1)
 
-heatmap!(ax1, θ_hier, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_hier, colormap=:binary, colorrange=(0, 1))
 hidedecorations!(ax2)
 heatmap!(ax2, A_hier, colormap=:binary)
 
