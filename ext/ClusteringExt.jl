@@ -18,20 +18,20 @@ function SSM(sbm::Union{SBM, DecoratedSBM}, num_shapes::Int)
     return Graphons.SSM(θ, block_pair_to_shape, sbm.size, sbm.cumsize, matrix_type(sbm))
 end
 
-function SSM(sbm::Union{SBM, DecoratedSBM}, data, shape_range, criterion_to_minimize)
-    best_ssm = nothing
-    best_criterion_value = Inf
-    X = _extract_params_triu(sbm)
-    for num_shapes in shape_range
-        ssm = SSM(_ssm_params(X, num_shapes, sbm)..., sbm.size, sbm.cumsize)
-        criterion_value = criterion_to_minimize(ssm, data)
-        if criterion_value < best_criterion_value
-            best_criterion_value = criterion_value
-            best_ssm = ssm
-        end
-    end
-    return best_ssm
-end
+# function SSM(sbm::Union{SBM, DecoratedSBM}, data, shape_range, criterion_to_minimize)
+#     best_ssm = nothing
+#     best_criterion_value = Inf
+#     X = _extract_params_triu(sbm)
+#     for num_shapes in shape_range
+#         ssm = SSM(_ssm_params(X, num_shapes, sbm)..., sbm.size, sbm.cumsize)
+#         criterion_value = criterion_to_minimize(ssm, data)
+#         if criterion_value < best_criterion_value
+#             best_criterion_value = criterion_value
+#             best_ssm = ssm
+#         end
+#     end
+#     return best_ssm
+# end
 
 ## =========================================================================================
 ## Helper functions for shape models estimation from Block models
