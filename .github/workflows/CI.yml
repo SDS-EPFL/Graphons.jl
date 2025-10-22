@@ -40,6 +40,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
+          gcov_ignore: ext/MakieExt.jl
   docs:
     name: Documentation
     runs-on: ubuntu-latest
