@@ -58,7 +58,7 @@ function convert_to_sbm(ssm::SSM{Bool, M}) where {M}
             θ_matrix[i, j] = ssm.θ[ssm.block_pair_to_shape[i, j]]
         end
     end
-    return SBM(θ_matrix, ssm.size, M)
+    return SBM(θ_matrix, ssm.size)
 end
 
 function convert_to_sbm(ssm::SSM{T, M, V, B, S, S2}) where {T, M, V, B, S, S2}

@@ -3,9 +3,9 @@ module ClusteringExt
 using Graphons
 using ArgCheck
 using Clustering
-import Distributions: support
+import Distributions: support, DiscreteNonParametric, params
 
-import Graphons: SSM
+import Graphons: SSM, upper_triangular_to_full, matrix_type
 
 function SSM(sbm::Union{SBM, DecoratedSBM}, num_shapes::Int)
     @argcheck num_shapes>0 "Number of shapes must be positive."
@@ -60,7 +60,7 @@ function convert_to_params(centers, ::SBM)
 end
 
 function convert_to_params(centers, ::DecoratedSBM{D}) where {D}
-    return [D(centers[i]) for i in axes(centers, 2)]
+    return [D(centers[:, i]...) for i in axes(centers, 2)]
 end
 
 # specialization for DiscreteNonParametric as it requires support to be specified
