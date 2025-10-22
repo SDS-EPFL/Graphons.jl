@@ -69,7 +69,7 @@ Define the shapes:
 
 ````@example 05_stochastic_shape_models
 θ = [0.8,  # Shape 1: high probability (within-block)
-     0.1]  # Shape 2: low probability (between-block)
+    0.1]  # Shape 2: low probability (between-block)
 ````
 
 Assign shapes to block pairs:
@@ -117,14 +117,13 @@ ax3 = Axis(fig[1, 3],
 Visualize shape assignments
 
 ````@example 05_stochastic_shape_models
-heatmap!(ax1, block_pair_to_shape, colormap = :tab10, colorrange = (1, 2))
+heatmap!(ax1, block_pair_to_shape)
 ````
 
-Visualize the equivalent probability matrix
+Visualize the equivalent probability matrix using direct plotting
 
 ````@example 05_stochastic_shape_models
-θ_matrix = get_theta_matrix(ssm_simple)
-hm = heatmap!(ax2, θ_matrix, colormap = :binary, colorrange = (0, 1))
+hm = heatmap!(ax2, ssm_simple, colormap = :binary, colorrange = (0, 1))
 ````
 
 Sample and visualize graph
@@ -154,21 +153,19 @@ We'll use only **3 shapes**:
 
 ````@example 05_stochastic_shape_models
 θ_hier = [0.9,  # Shape 1: dense (core-core)
-          0.5,  # Shape 2: medium (core-periphery)
-          0.1]  # Shape 3: sparse (periphery-periphery)
+    0.5,  # Shape 2: medium (core-periphery)
+    0.1]  # Shape 3: sparse (periphery-periphery)
 ````
 
 Create the shape assignment matrix for hierarchical structure:
 
 ````@example 05_stochastic_shape_models
-block_pair_to_shape_hier = [
-    1 1 2 2 2 2;   # Core block 1
-    1 1 2 2 2 2;   # Core block 2
-    2 2 3 3 3 3;   # Periphery block 1
-    2 2 3 3 3 3;   # Periphery block 2
-    2 2 3 3 3 3;   # Periphery block 3
-    2 2 3 3 3 3    # Periphery block 4
-]
+block_pair_to_shape_hier = [1 1 2 2 2 2;   # Core block 1
+                            1 1 2 2 2 2;   # Core block 2
+                            2 2 3 3 3 3;   # Periphery block 1
+                            2 2 3 3 3 3;   # Periphery block 2
+                            2 2 3 3 3 3;   # Periphery block 3
+                            2 2 3 3 3 3]
 
 sizes_hier = [0.15, 0.15, 0.175, 0.175, 0.175, 0.175]  # Core smaller than periphery
 
@@ -198,8 +195,7 @@ ax3 = Axis(fig[1, 3],
 
 heatmap!(ax1, block_pair_to_shape_hier, colormap = :tab10, colorrange = (1, 3))
 
-θ_matrix_hier = get_theta_matrix(ssm_hier)
-hm = heatmap!(ax2, θ_matrix_hier, colormap = :binary, colorrange = (0, 1))
+hm = heatmap!(ax2, ssm_hier, colormap = :binary, colorrange = (0, 1))
 
 hidedecorations!(ax3)
 A_hier = sample_graph(ssm_hier, 300)
@@ -226,21 +222,19 @@ Using **4 shapes**:
 
 ````@example 05_stochastic_shape_models
 θ_modular = [0.9,  # Shape 1: within-community
-             0.6,  # Shape 2: within-module, between-community
-             0.2,  # Shape 3: between-module
-             0.05] # Shape 4: no connection (rare edges)
+    0.6,  # Shape 2: within-module, between-community
+    0.2,  # Shape 3: between-module
+    0.05] # Shape 4: no connection (rare edges)
 
-block_pair_to_shape_modular = [
-    1 2 3 4;   # Community 1
-    2 1 4 3;   # Community 2
-    3 4 1 2;   # Community 3
-    4 3 2 1    # Community 4
-]
+block_pair_to_shape_modular = [1 2 3 4;   # Community 1
+                               2 1 4 3;   # Community 2
+                               3 4 1 2;   # Community 3
+                               4 3 2 1]
 
 sizes_modular = [0.25, 0.25, 0.25, 0.25]
 
 ssm_modular = SSM(θ_modular, block_pair_to_shape_modular,
-                  sizes_modular, cumsum(sizes_modular))
+    sizes_modular, cumsum(sizes_modular))
 ````
 
 Visualize:
@@ -266,8 +260,7 @@ ax3 = Axis(fig[1, 3],
 
 heatmap!(ax1, block_pair_to_shape_modular, colormap = :tab10, colorrange = (1, 4))
 
-θ_matrix_modular = get_theta_matrix(ssm_modular)
-hm = heatmap!(ax2, θ_matrix_modular, colormap = :binary, colorrange = (0, 1))
+hm = heatmap!(ax2, ssm_modular, colormap = :binary, colorrange = (0, 1))
 
 hidedecorations!(ax3)
 A_modular = sample_graph(ssm_modular, 200)
@@ -287,25 +280,13 @@ The SSM uses only 4 parameters to capture this complex structure, compared to
 Every SSM can be converted to an equivalent SBM by expanding the shape assignments:
 
 ````@example 05_stochastic_shape_models
-sbm_from_ssm = convert_to_sbm(ssm_modular)
+sbm_from_ssm = Graphons.convert_to_sbm(ssm_modular)
 
 println("SSM type: ", typeof(ssm_modular))
 println("SSM parameters: ", length(ssm_modular.θ), " shapes")
 println("\nConverted SBM type: ", typeof(sbm_from_ssm))
 println("SBM matrix size: ", size(sbm_from_ssm.θ))
 println("SBM parameters: ", length(sbm_from_ssm.θ), " entries")
-````
-
-Let's verify they produce the same edge probabilities:
-
-````@example 05_stochastic_shape_models
-test_points = [(0.1, 0.2), (0.5, 0.6), (0.3, 0.8)]
-println("\nVerifying equivalent edge probabilities:")
-for (x, y) in test_points
-    ssm_prob = ssm_modular(x, y)
-    sbm_prob = sbm_from_ssm(x, y)
-    println("($x, $y): SSM=$ssm_prob, SBM=$sbm_prob, Match=$(ssm_prob == sbm_prob)")
-end
 ````
 
 The SSM and SBM are mathematically equivalent, but the SSM representation
@@ -331,16 +312,14 @@ Define shape distributions (instead of probabilities):
 3-block network with signed edges:
 
 ````@example 05_stochastic_shape_models
-block_pair_to_shape_weighted = [
-    1 2 3;   # Block 1: positive within, weak to 2, negative to 3
-    2 1 2;   # Block 2: positive within, weak elsewhere
-    3 2 1    # Block 3: negative to 1, weak to 2, positive within
-]
+block_pair_to_shape_weighted = [1 2 3;   # Block 1: positive within, weak to 2, negative to 3
+                                2 1 2;   # Block 2: positive within, weak elsewhere
+                                3 2 1]
 
 sizes_weighted = [0.35, 0.3, 0.35]
 
 ssm_weighted = SSM(θ_weighted, block_pair_to_shape_weighted,
-                   sizes_weighted, cumsum(sizes_weighted))
+    sizes_weighted, cumsum(sizes_weighted))
 ````
 
 Sample a weighted graph:
@@ -384,11 +363,11 @@ Show mean of each distribution
 θ_matrix_weighted = [θ_means[block_pair_to_shape_weighted[i, j]]
                      for i in 1:3, j in 1:3]
 hm_means = heatmap!(ax2, θ_matrix_weighted, colormap = :RdBu,
-                    colorrange = (-3, 6))
+    colorrange = (-3, 6))
 
 hidedecorations!(ax3)
 hm_weights = heatmap!(ax3, A_weighted, colormap = :RdBu,
-                      colorrange = (-4, 7))
+    colorrange = (-4, 7))
 
 Colorbar(fig[1, 4], hm_weights, label = "Edge weight")
 
@@ -409,11 +388,9 @@ Same shapes as before, but with very unequal block sizes:
 
 ````@example 05_stochastic_shape_models
 θ_dc = [0.9, 0.3, 0.05]
-block_pair_to_shape_dc = [
-    1 2 3;
-    2 1 2;
-    3 2 1
-]
+block_pair_to_shape_dc = [1 2 3;
+                          2 1 2;
+                          3 2 1]
 sizes_dc = [0.6, 0.3, 0.1]  # Highly unequal blocks
 
 ssm_dc = SSM(θ_dc, block_pair_to_shape_dc, sizes_dc, cumsum(sizes_dc))
@@ -439,7 +416,7 @@ Sample with equal sizes
 
 ````@example 05_stochastic_shape_models
 ssm_equal = SSM(θ_dc, block_pair_to_shape_dc, [0.33, 0.33, 0.34],
-                cumsum([0.33, 0.33, 0.34]))
+    cumsum([0.33, 0.33, 0.34]))
 A_equal = sample_graph(ssm_equal, 300)
 heatmap!(ax1, A_equal, colormap = :binary)
 ````
@@ -452,37 +429,6 @@ heatmap!(ax2, A_unequal, colormap = :binary)
 
 fig
 ````
-
-The unequal block sizes create degree heterogeneity: nodes in the large
-block (top-left) have different average degrees than nodes in small blocks.
-
-## Practical Considerations
-
-### When to use SSMs vs SBMs?
-
-**Use SSMs when**:
-- You have many blocks but limited data (avoid overfitting)
-- The network has repeating patterns (hierarchies, modules)
-- You want interpretable, parsimonious models
-- You need to model very large networks efficiently
-
-**Use standard SBMs when**:
-- You have few blocks (k ≤ 5)
-- Every block pair has unique connectivity
-- You have abundant data to estimate k² parameters
-- Maximum flexibility is more important than parsimony
-
-### Choosing the number of shapes
-
-The optimal number of shapes depends on:
-- **Network structure**: How many distinct connectivity patterns exist?
-- **Sample size**: More data allows more shapes to be identified
-- **Model selection**: Use cross-validation or information criteria (AIC, BIC)
-
-As a rule of thumb:
-- Start with S = k (one shape per block, then merge similar shapes)
-- Use S = 2-5 for most networks with k = 5-20 blocks
-- Increase S if the model doesn't fit well
 
 ## Analyzing Shape Assignments
 
@@ -527,7 +473,7 @@ ssm_compare = ssm_modular
 Equivalent SBM (16 parameters):
 
 ````@example 05_stochastic_shape_models
-sbm_compare = convert_to_sbm(ssm_compare)
+sbm_compare = Graphons.convert_to_sbm(ssm_compare)
 ````
 
 Sample from both:
@@ -571,24 +517,11 @@ to see what structures emerge:
 
 ````@example 05_stochastic_shape_models
 function random_ssm(K, S, rng = Random.GLOBAL_RNG)
-````
-
-Random shape probabilities
-
-````@example 05_stochastic_shape_models
     θ = sort(rand(rng, S), rev = true)
-````
 
-Random (symmetric) shape assignments
-
-````@example 05_stochastic_shape_models
     assignments = rand(rng, 1:S, K, K)
     block_pair_to_shape = (assignments + assignments') .÷ 2
-````
 
-Random block sizes
-
-````@example 05_stochastic_shape_models
     sizes = rand(rng, K)
     sizes ./= sum(sizes)
 
@@ -615,7 +548,7 @@ ax3 = Axis(fig[1, 3],
     aspect = 1)
 
 heatmap!(ax1, ssm_random.block_pair_to_shape, colormap = :tab10)
-hm = heatmap!(ax2, get_theta_matrix(ssm_random), colormap = :binary, colorrange = (0, 1))
+hm = heatmap!(ax2, ssm_random, colormap = :binary, colorrange = (0, 1))
 hidedecorations!(ax3)
 heatmap!(ax3, A_random, colormap = :binary)
 
@@ -639,35 +572,10 @@ Random SSMs can generate surprisingly diverse structures!
 - Decorated SSMs combine parameter efficiency with rich edge attributes (weights, distributions)
 - Use `get_theta_matrix()` to visualize the full probability matrix from shapes
 
-## Implementation Details
-
-The key components of an SSM:
-```julia
-struct SSM
-    θ                    # Shape parameters (length S)
-    block_pair_to_shape  # k×k assignment matrix
-    size                 # Block sizes (length k)
-    cumsize             # Cumulative block sizes
-end
-```
-
-Edge probability between nodes with latents x, y:
-```julia
-function (ssm::SSM)(x, y)
-    i = block_of(x)  # Which block for x
-    j = block_of(y)  # Which block for y
-    s = ssm.block_pair_to_shape[i, j]  # Which shape
-    return ssm.θ[s]  # Shape parameter
-end
-```
-
 ## References
 
-Stochastic Shape Models were introduced in:
+Stochastic Shape Models were introduced in [verdeyme_hybrid_2024](@cite)
 
-**Verdeyme, A., Rebeschini, P., & Latouche, P. (2024)**
-*A hybrid graphon model for stochastic block structures*
-[arXiv:2401.05088](https://arxiv.org/abs/2401.05088)
 
 The paper provides:
 - Theoretical properties (consistency, rates of convergence)
@@ -675,12 +583,95 @@ The paper provides:
 - Applications to real network data
 - Comparisons with standard SBMs and other graphon models
 
-## Next Steps
+## Real-World Example: Multiplex Network from Research
 
-- For basic graphon concepts, see **Tutorial 01: Getting Started with Graphons**
-- For standard block models, see **Tutorial 02: Stochastic Block Models**
-- For decorated graphons with distributions, see **Tutorial 04: Custom Distributions**
-- For multiplex networks, see **Tutorial 03: Multiplex Networks**
+Let's recreate an example from recent research on decorated graphon estimation
+(Dufour & Olhede, 2024). This example demonstrates how SSMs can provide smoother
+approximations than standard SBMs for complex multiplex networks.
+
+The graphon `w3` models a 4-category multiplex network where edge probabilities
+are determined by a softmax transformation of four distinct spatial patterns:
+
+````@example 05_stochastic_shape_models
+using LogExpFunctions: softmax!
+function w3(x, y)
+    tabulation = zeros(4)
+    tabulation[1] = 3 * x * y                                      # Linear interaction
+    tabulation[2] = 3 * sin(2 * π * x) * sin(2 * π * y)           # Periodic pattern
+    tabulation[3] = exp(-3 * ((x - 0.5)^2 + (y - 0.5)^2))        # Gaussian bump
+    tabulation[4] = 2 - 3 * (x + y)                               # Decreasing pattern
+    softmax!(tabulation)
+    return DiscreteNonParametric(0:3, tabulation)
+end
+````
+
+Create the decorated graphon:
+
+````@example 05_stochastic_shape_models
+graphon_w3 = DecoratedGraphon(w3)
+````
+
+Visualize the four category probabilities:
+
+````@example 05_stochastic_shape_models
+fig = Figure(size = (1000, 250))
+
+for i in 1:4
+    ax = Axis(fig[1, i],
+        title = "Category $i",
+        aspect = 1)
+    hidedecorations!(ax)
+    hm = heatmap!(ax, graphon_w3, k = i, colormap = :binary, colorrange = (0, 1))
+end
+
+Colorbar(fig[1, 5], colormap = :binary, colorrange = (0, 1),
+    label = "Probability", height = Relative(0.8))
+
+fig
+````
+
+### Comparing SBM vs SSM Approximations
+
+Create a standard SBM approximation with k=10 blocks:
+
+````@example 05_stochastic_shape_models
+k_blocks = 15
+sbm_w3 = empirical_graphon(graphon_w3, k_blocks)
+````
+
+For the SSM, we'll use fewer shapes (s=30) than the SBM parameters (k(k+1)/2=120):
+This demonstrates the parameter efficiency of SSMs.
+In the `Graphons` package, to automatically create an SSM from an SBM, we can load the
+`Clustering` package and use the `SSM` constructor:
+
+````@example 05_stochastic_shape_models
+using Clustering
+
+ssm_w3 = SSM(sbm_w3, 30)
+````
+
+We can now visualize the difference between the SBM and SSM approximations:
+
+````@example 05_stochastic_shape_models
+fig = Figure(size = (1000, 500))
+
+for i in 1:4
+    ax = Axis(fig[1, i],
+        title = "Category $i",
+        aspect = 1)
+    hidedecorations!(ax)
+    hm = heatmap!(ax, sbm_w3, k = i, colormap = :binary, colorrange = (0, 1))
+    ax2 = Axis(fig[2, i],
+        aspect = 1)
+    hidedecorations!(ax2)
+    hm = heatmap!(ax2, ssm_w3, k = i, colormap = :binary, colorrange = (0, 1))
+end
+
+Colorbar(fig[1, 5], colormap = :binary, colorrange = (0, 1),
+    label = "Probability", height = Relative(0.8))
+
+fig
+````
 
 ---
 

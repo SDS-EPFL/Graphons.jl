@@ -28,7 +28,7 @@ end
 ## Decorated graphons
 
 function Makie.used_attributes(
-        ::Type{<:Plot}, graphon::Union{DecoratedGraphon, DecoratedSBM})
+        ::Type{<:Plot}, graphon::AbstractGraphon)
     return (:k, :res)
 end
 

@@ -247,15 +247,6 @@ println("\nConverted SBM type: ", typeof(sbm_from_ssm))
 println("SBM matrix size: ", size(sbm_from_ssm.θ))
 println("SBM parameters: ", length(sbm_from_ssm.θ), " entries")
 
-# Let's verify they produce the same edge probabilities:
-test_points = [(0.1, 0.2), (0.5, 0.6), (0.3, 0.8)]
-println("\nVerifying equivalent edge probabilities:")
-for (x, y) in test_points
-    ssm_prob = ssm_modular(x, y)
-    sbm_prob = sbm_from_ssm(x, y)
-    println("($x, $y): SSM=$ssm_prob, SBM=$sbm_prob, Match=$(ssm_prob == sbm_prob)")
-end
-
 # The SSM and SBM are mathematically equivalent, but the SSM representation
 # is more **compact** and **interpretable** when many block pairs share patterns.
 
@@ -372,37 +363,6 @@ heatmap!(ax2, A_unequal, colormap = :binary)
 
 fig
 
-# The unequal block sizes create degree heterogeneity: nodes in the large
-# block (top-left) have different average degrees than nodes in small blocks.
-
-# ## Practical Considerations
-#
-# ### When to use SSMs vs SBMs?
-#
-# **Use SSMs when**:
-# - You have many blocks but limited data (avoid overfitting)
-# - The network has repeating patterns (hierarchies, modules)
-# - You want interpretable, parsimonious models
-# - You need to model very large networks efficiently
-#
-# **Use standard SBMs when**:
-# - You have few blocks (k ≤ 5)
-# - Every block pair has unique connectivity
-# - You have abundant data to estimate k² parameters
-# - Maximum flexibility is more important than parsimony
-
-# ### Choosing the number of shapes
-#
-# The optimal number of shapes depends on:
-# - **Network structure**: How many distinct connectivity patterns exist?
-# - **Sample size**: More data allows more shapes to be identified
-# - **Model selection**: Use cross-validation or information criteria (AIC, BIC)
-#
-# As a rule of thumb:
-# - Start with S = k (one shape per block, then merge similar shapes)
-# - Use S = 2-5 for most networks with k = 5-20 blocks
-# - Increase S if the model doesn't fit well
-
 # ## Analyzing Shape Assignments
 #
 # Let's analyze which block pairs are assigned to which shapes:
@@ -475,14 +435,11 @@ fig
 # to see what structures emerge:
 
 function random_ssm(K, S, rng = Random.GLOBAL_RNG)
-    # Random shape probabilities
     θ = sort(rand(rng, S), rev = true)
 
-    # Random (symmetric) shape assignments
     assignments = rand(rng, 1:S, K, K)
     block_pair_to_shape = (assignments + assignments') .÷ 2
 
-    # Random block sizes
     sizes = rand(rng, K)
     sizes ./= sum(sizes)
 
@@ -532,35 +489,11 @@ fig
 # - Decorated SSMs combine parameter efficiency with rich edge attributes (weights, distributions)
 # - Use `get_theta_matrix()` to visualize the full probability matrix from shapes
 #
-# ## Implementation Details
-#
-# The key components of an SSM:
-# ```julia
-# struct SSM
-#     θ                    # Shape parameters (length S)
-#     block_pair_to_shape  # k×k assignment matrix
-#     size                 # Block sizes (length k)
-#     cumsize             # Cumulative block sizes
-# end
-# ```
-#
-# Edge probability between nodes with latents x, y:
-# ```julia
-# function (ssm::SSM)(x, y)
-#     i = block_of(x)  # Which block for x
-#     j = block_of(y)  # Which block for y
-#     s = ssm.block_pair_to_shape[i, j]  # Which shape
-#     return ssm.θ[s]  # Shape parameter
-# end
-# ```
 
 # ## References
 #
-# Stochastic Shape Models were introduced in:
+# Stochastic Shape Models were introduced in [verdeyme_hybrid_2024](@cite)
 #
-# **Verdeyme, A., Rebeschini, P., & Latouche, P. (2024)**
-# *A hybrid graphon model for stochastic block structures*
-# [arXiv:2401.05088](https://arxiv.org/abs/2401.05088)
 #
 # The paper provides:
 # - Theoretical properties (consistency, rates of convergence)
@@ -568,9 +501,78 @@ fig
 # - Applications to real network data
 # - Comparisons with standard SBMs and other graphon models
 #
-# ## Next Steps
+# ## Real-World Example: Multiplex Network from Research
 #
-# - For basic graphon concepts, see **Tutorial 01: Getting Started with Graphons**
-# - For standard block models, see **Tutorial 02: Stochastic Block Models**
-# - For decorated graphons with distributions, see **Tutorial 04: Custom Distributions**
-# - For multiplex networks, see **Tutorial 03: Multiplex Networks**
+# Let's recreate an example from recent research on decorated graphon estimation
+# (Dufour & Olhede, 2024). This example demonstrates how SSMs can provide smoother
+# approximations than standard SBMs for complex multiplex networks.
+#
+# The graphon `w3` models a 4-category multiplex network where edge probabilities
+# are determined by a softmax transformation of four distinct spatial patterns:
+
+using LogExpFunctions: softmax!
+function w3(x, y)
+    tabulation = zeros(4)
+    tabulation[1] = 3 * x * y                                      # Linear interaction
+    tabulation[2] = 3 * sin(2 * π * x) * sin(2 * π * y)           # Periodic pattern
+    tabulation[3] = exp(-3 * ((x - 0.5)^2 + (y - 0.5)^2))        # Gaussian bump
+    tabulation[4] = 2 - 3 * (x + y)                               # Decreasing pattern
+    softmax!(tabulation)
+    return DiscreteNonParametric(0:3, tabulation)
+end
+
+# Create the decorated graphon:
+graphon_w3 = DecoratedGraphon(w3)
+
+# Visualize the four category probabilities:
+
+fig = Figure(size = (1000, 250))
+
+for i in 1:4
+    ax = Axis(fig[1, i],
+        title = "Category $i",
+        aspect = 1)
+    hidedecorations!(ax)
+    hm = heatmap!(ax, graphon_w3, k = i, colormap = :binary, colorrange = (0, 1))
+end
+
+Colorbar(fig[1, 5], colormap = :binary, colorrange = (0, 1),
+    label = "Probability", height = Relative(0.8))
+
+fig
+
+# ### Comparing SBM vs SSM Approximations
+#
+
+# Create a standard SBM approximation with k=10 blocks:
+k_blocks = 15
+sbm_w3 = empirical_graphon(graphon_w3, k_blocks)
+
+# For the SSM, we'll use fewer shapes (s=30) than the SBM parameters (k(k+1)/2=120):
+# This demonstrates the parameter efficiency of SSMs.
+# In the `Graphons` package, to automatically create an SSM from an SBM, we can load the
+# `Clustering` package and use the `SSM` constructor:
+using Clustering
+
+ssm_w3 = SSM(sbm_w3, 30)
+
+# We can now visualize the difference between the SBM and SSM approximations:
+
+fig = Figure(size = (1000, 500))
+
+for i in 1:4
+    ax = Axis(fig[1, i],
+        title = "Category $i",
+        aspect = 1)
+    hidedecorations!(ax)
+    hm = heatmap!(ax, sbm_w3, k = i, colormap = :binary, colorrange = (0, 1))
+    ax2 = Axis(fig[2, i],
+        aspect = 1)
+    hidedecorations!(ax2)
+    hm = heatmap!(ax2, ssm_w3, k = i, colormap = :binary, colorrange = (0, 1))
+end
+
+Colorbar(fig[1, 5], colormap = :binary, colorrange = (0, 1),
+    label = "Probability", height = Relative(0.8))
+
+fig
