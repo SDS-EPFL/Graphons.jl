@@ -38,12 +38,14 @@ using Distributions
 
     @testset "_convert_latent_to_block" begin
         sizes = [0.3, 0.3, 0.4]
-        cumsizes = cumsum(sizes)
         sbm = SBM([0.8 0.1 0.2; 0.1 0.9 0.1; 0.2 0.1 0.7], sizes)
 
         @test Graphons._convert_latent_to_block(sbm, 0.15) == 1
         @test Graphons._convert_latent_to_block(sbm, 0.45) == 2
         @test Graphons._convert_latent_to_block(sbm, 0.8) == 3
+
+        @test Graphons._convert_latent_to_block(sbm, 0.15, 0.45) == (1, 2)
+        @test Graphons._convert_latent_to_block(sbm, 0.5, 0.85) == (2, 3)
     end
 
     @testset "_extract_param" begin
