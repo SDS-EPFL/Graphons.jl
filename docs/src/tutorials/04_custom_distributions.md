@@ -47,9 +47,9 @@ struct CustomCategorical{T}
     probabilities::Vector{Float64}
     cumulative::Vector{Float64}  # Precomputed for efficiency
 
-    function CustomCategorical(values::Vector{T}, probs::Vector{Float64}) where T
-        @assert length(values) == length(probs) "Values and probabilities must have same length"
-        @assert sum(probs) ≈ 1.0 "Probabilities must sum to 1"
+    function CustomCategorical(values::Vector{T}, probs::Vector{Float64}) where {T}
+        @assert length(values)==length(probs) "Values and probabilities must have same length"
+        @assert sum(probs)≈1.0 "Probabilities must sum to 1"
         @assert all(p >= 0 for p in probs) "Probabilities must be non-negative"
 
         # Precompute cumulative probabilities for faster sampling
@@ -76,7 +76,7 @@ end
 Implement the required eltype method
 
 ````@example 04_custom_distributions
-Base.eltype(::CustomCategorical{T}) where T = T
+Base.eltype(::CustomCategorical{T}) where {T} = T
 ````
 
 Add StatsAPI.params method for automatic parameter extraction and plotting
@@ -93,7 +93,7 @@ Optional: nice display
 function Base.show(io::IO, d::CustomCategorical)
     print(io, "CustomCategorical(")
     for (i, (v, p)) in enumerate(zip(d.values, d.probabilities))
-        print(io, v, "=>", round(p, digits=2))
+        print(io, v, "=>", round(p, digits = 2))
         if i < length(d.values)
             print(io, ", ")
         end
@@ -108,7 +108,8 @@ Test our custom distribution:
 dist = CustomCategorical([1, 2, 3], [0.5, 0.3, 0.2])
 samples = [rand(dist) for _ in 1:1000]
 println("Distribution: ", dist)
-println("Sample mean: ", mean(samples), " (expected: ", sum(dist.values .* dist.probabilities), ")")
+println("Sample mean: ", mean(samples), " (expected: ",
+    sum(dist.values .* dist.probabilities), ")")
 println("Sample frequencies: ", [count(==(i), samples) for i in 1:3])
 println("Parameters: ", StatsAPI.params(dist))
 ````
@@ -144,26 +145,29 @@ n = 100
 A_strength = sample_graph(graphon_strength, n)
 
 println("Edge type distribution:")
-println("  Weak (1):   ", count(==(1), A_strength), " (", round(count(==(1), A_strength) / n^2 * 100, digits=1), "%)")
-println("  Medium (2): ", count(==(2), A_strength), " (", round(count(==(2), A_strength) / n^2 * 100, digits=1), "%)")
-println("  Strong (3): ", count(==(3), A_strength), " (", round(count(==(3), A_strength) / n^2 * 100, digits=1), "%)")
+println("  Weak (1):   ", count(==(1), A_strength), " (",
+    round(count(==(1), A_strength) / n^2 * 100, digits = 1), "%)")
+println("  Medium (2): ", count(==(2), A_strength), " (",
+    round(count(==(2), A_strength) / n^2 * 100, digits = 1), "%)")
+println("  Strong (3): ", count(==(3), A_strength), " (",
+    round(count(==(3), A_strength) / n^2 * 100, digits = 1), "%)")
 ````
 
 ## Visualizing Edge Strength Patterns
 
 ````@example 04_custom_distributions
-fig = Figure(size=(1200, 400))
+fig = Figure(size = (1200, 400))
 
 # Show the three edge types separately
 for (i, (edge_type, label)) in enumerate(zip([1, 2, 3], ["Weak", "Medium", "Strong"]))
     ax = Axis(fig[1, i],
-        title="$label Edges (type=$edge_type)",
-        aspect=1)
+        title = "$label Edges (type=$edge_type)",
+        aspect = 1)
     hidedecorations!(ax)
 
     A_binary = zeros(Bool, n, n)
-    A_binary[A_strength.==edge_type] .= true
-    heatmap!(ax, A_binary, colormap=:binary)
+    A_binary[A_strength .== edge_type] .= true
+    heatmap!(ax, A_binary, colormap = :binary)
 end
 
 fig
@@ -175,16 +179,16 @@ while weak edges (type 1) are more common far from the diagonal!
 We can compare the above plots with the underlying probabilities from the graphon:
 
 ````@example 04_custom_distributions
-fig = Figure(size=(1200, 400))
+fig = Figure(size = (1200, 400))
 
 # Show the three edge types separately
 for (i, (edge_type, label)) in enumerate(zip([1, 2, 3], ["Weak", "Medium", "Strong"]))
     ax = Axis(fig[1, i],
-        title="$label Edges (type=$edge_type)",
-        aspect=1)
+        title = "$label Edges (type=$edge_type)",
+        aspect = 1)
     hidedecorations!(ax)
 
-    heatmap!(ax, graphon_strength, k=i, res=0.001, colormap=:binary)
+    heatmap!(ax, graphon_strength, k = i, res = 0.001, colormap = :binary)
 end
 
 fig
@@ -202,8 +206,8 @@ struct TruncatedPowerLaw
     x_max::Float64  # Maximum value
 
     function TruncatedPowerLaw(α, x_min, x_max)
-        @assert α > 0 "Exponent must be positive"
-        @assert x_max > x_min > 0 "Must have x_max > x_min > 0"
+        @assert α>0 "Exponent must be positive"
+        @assert x_max>x_min>0 "Must have x_max > x_min > 0"
         new(α, x_min, x_max)
     end
 end
@@ -251,19 +255,19 @@ println("  Weight range: [", minimum(A_powerlaw), ", ", maximum(A_powerlaw), "]"
 Visualize the weighted network:
 
 ````@example 04_custom_distributions
-fig = Figure(size=(900, 400))
+fig = Figure(size = (900, 400))
 
 ax1 = Axis(fig[1, 1],
-    title="Edge Weights (log scale)",
-    aspect=1)
+    title = "Edge Weights (log scale)",
+    aspect = 1)
 hidedecorations!(ax1)
-heatmap!(ax1, log10.(A_powerlaw .+ 0.01), colormap=:viridis)
+heatmap!(ax1, log10.(A_powerlaw .+ 0.01), colormap = :viridis)
 
 ax2 = Axis(fig[1, 2],
-    title="Weight Distribution",
-    xlabel="Edge Weight",
-    ylabel="Frequency")
-hist!(ax2, vec(A_powerlaw), bins=50, color=(:blue, 0.5))
+    title = "Weight Distribution",
+    xlabel = "Edge Weight",
+    ylabel = "Frequency")
+hist!(ax2, vec(A_powerlaw), bins = 50, color = (:blue, 0.5))
 
 fig
 ````
@@ -271,12 +275,12 @@ fig
 and compare to the underlying graphon
 
 ````@example 04_custom_distributions
-fig = Figure(size=(450, 400))
+fig = Figure(size = (450, 400))
 ax1 = Axis(fig[1, 1],
-    title="α",
-    aspect=1)
+    title = "α",
+    aspect = 1)
 hidedecorations!(ax1)
-heatmap!(ax1, graphon_powerlaw, colormap=:viridis)
+heatmap!(ax1, graphon_powerlaw, colormap = :viridis)
 
 fig
 ````
@@ -305,7 +309,7 @@ function Base.rand(rng::AbstractRNG, d::MultiAttributeEdge)
     end
 end
 
-Base.eltype(::MultiAttributeEdge) = SVector{3,Float64}
+Base.eltype(::MultiAttributeEdge) = SVector{3, Float64}
 
 function Base.show(io::IO, d::MultiAttributeEdge)
     print(io, "MultiAttributeEdge(p=", d.base_prob, ")")
@@ -334,19 +338,19 @@ weights = [a[1] for a in A_multi]
 confidences = [a[2] for a in A_multi]
 timestamps = [a[3] for a in A_multi]
 
-fig = Figure(size=(1200, 350))
+fig = Figure(size = (1200, 350))
 
-ax1 = Axis(fig[1, 1], title="Weights", aspect=1)
+ax1 = Axis(fig[1, 1], title = "Weights", aspect = 1)
 hidedecorations!(ax1)
-heatmap!(ax1, weights, colormap=:viridis)
+heatmap!(ax1, weights, colormap = :viridis)
 
-ax2 = Axis(fig[1, 2], title="Confidences", aspect=1)
+ax2 = Axis(fig[1, 2], title = "Confidences", aspect = 1)
 hidedecorations!(ax2)
-heatmap!(ax2, confidences, colormap=:viridis)
+heatmap!(ax2, confidences, colormap = :viridis)
 
-ax3 = Axis(fig[1, 3], title="Timestamps", aspect=1)
+ax3 = Axis(fig[1, 3], title = "Timestamps", aspect = 1)
 hidedecorations!(ax3)
-heatmap!(ax3, timestamps, colormap=:viridis)
+heatmap!(ax3, timestamps, colormap = :viridis)
 
 fig
 ````

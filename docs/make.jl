@@ -49,6 +49,7 @@ makedocs(;
             "Getting Started with Graphons" => "tutorials/01_simple_graphon.md",
             "Stochastic Block Models" => "tutorials/02_block_models.md",
             "Multiplex Networks" => "tutorials/03_multiplex_networks.md",
+            "Stochastic Shape Models" => "tutorials/05_stochastic_shape_models.md",
             "Custom Distributions" => "tutorials/04_custom_distributions.md"
         ],
         "Design" => [

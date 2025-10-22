@@ -13,7 +13,12 @@ function make_empty_graph(::Type{M}, n) where {M <: AbstractMatrix}
 end
 
 function _convert_latent_to_block(sbm, ξ)
-    return findfirst(y -> ξ <= y, sbm.cumsize)
+    res = findfirst(y -> ξ <= y, sbm.cumsize)
+    if isnothing(res)
+        return length(sbm.cumsize)
+    else
+        return res
+    end
 end
 
 @inline function _convert_latent_to_block(sbm, ξ1, ξ2)

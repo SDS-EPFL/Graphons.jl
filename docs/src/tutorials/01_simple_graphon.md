@@ -80,14 +80,14 @@ Let's visualize the graphon function as a heatmap. Brighter colors indicate
 higher edge probabilities.
 
 ````@example 01_simple_graphon
-fig = Figure(size=(500, 450))
+fig = Figure(size = (500, 450))
 ax = Axis(fig[1, 1],
-    xlabel="Latent position x",
-    ylabel="Latent position y",
-    title="Graphon W(x,y) = x·y",
-    aspect=1)
-hm = heatmap!(ax, graphon, colormap=:binary, colorrange=(0, 1))
-Colorbar(fig[1, 2], hm, label="Edge probability")
+    xlabel = "Latent position x",
+    ylabel = "Latent position y",
+    title = "Graphon W(x,y) = x·y",
+    aspect = 1)
+hm = heatmap!(ax, graphon, colormap = :binary, colorrange = (0, 1))
+Colorbar(fig[1, 2], hm, label = "Edge probability")
 fig
 ````
 
@@ -112,11 +112,11 @@ nothing #hide
 This creates a 100×100 adjacency matrix. Let's visualize it:
 
 ````@example 01_simple_graphon
-fig = Figure(size=(500, 450))
+fig = Figure(size = (500, 450))
 ax = Axis(fig[1, 1],
-    title="Random graph (n=100)",
-    aspect=1)
-heatmap!(ax, A_random, colormap=:binary)
+    title = "Random graph (n=100)",
+    aspect = 1)
+heatmap!(ax, A_random, colormap = :binary)
 fig
 ````
 
@@ -133,11 +133,11 @@ Use `sample_graph` with explicit latent positions:
 ξs = 0.0:0.01:1.0  # Evenly spaced from 0 to 1
 A_ordered = sample_graph(graphon, ξs)
 
-fig = Figure(size=(500, 450))
+fig = Figure(size = (500, 450))
 ax = Axis(fig[1, 1],
-    title="Ordered graph (n=$(length(ξs)))",
-    aspect=1)
-heatmap!(ax, A_ordered, colormap=:binary)
+    title = "Ordered graph (n=$(length(ξs)))",
+    aspect = 1)
+heatmap!(ax, A_ordered, colormap = :binary)
 fig
 ````
 
@@ -155,7 +155,7 @@ using SparseArrays
 Create a sparse-matrix graphon:
 
 ````@example 01_simple_graphon
-graphon_sparse = SimpleContinuousGraphon(W_quadratic, SparseMatrixCSC{Bool,Int})
+graphon_sparse = SimpleContinuousGraphon(W_quadratic, SparseMatrixCSC{Bool, Int})
 ````
 
 Sample a large sparse graph:

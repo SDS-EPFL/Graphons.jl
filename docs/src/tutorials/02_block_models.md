@@ -58,21 +58,21 @@ sbm_assort2 = SBM(θ_assort2, sizes_assort2)
 Visualize the block structure:
 
 ````@example 02_block_models
-fig = Figure(size=(800, 350))
+fig = Figure(size = (800, 350))
 ax1 = Axis(fig[1, 1],
-    title="Block Probability Matrix",
-    aspect=1)
+    title = "Block Probability Matrix",
+    aspect = 1)
 ax2 = Axis(fig[1, 2],
-    title="Sampled Graph (n=200)",
-    aspect=1)
+    title = "Sampled Graph (n=200)",
+    aspect = 1)
 
-heatmap!(ax1, sbm_assort2, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_assort2, colormap = :binary, colorrange = (0, 1))
 hidedecorations!(ax2)
 
 A_assort2 = sample_graph(sbm_assort2, 200)
-heatmap!(ax2, A_assort2, colormap=:binary)
+heatmap!(ax2, A_assort2, colormap = :binary)
 
-Colorbar(fig[1, 3], colormap=:binary, colorrange=(0, 1), label="Probability")
+Colorbar(fig[1, 3], colormap = :binary, colorrange = (0, 1), label = "Probability")
 
 fig
 ````
@@ -85,26 +85,26 @@ Let's create a more complex structure with three communities of different sizes:
 
 ````@example 02_block_models
 θ_assort3 = [0.9 0.1 0.05;
-    0.1 0.8 0.1;
-    0.05 0.1 0.85]
+             0.1 0.8 0.1;
+             0.05 0.1 0.85]
 sizes_assort3 = [0.3, 0.4, 0.3]
 
 sbm_assort3 = SBM(θ_assort3, sizes_assort3)
 A_assort3 = sample_graph(sbm_assort3, 200)
 
-fig = Figure(size=(800, 350))
+fig = Figure(size = (800, 350))
 ax1 = Axis(fig[1, 1],
-    title="3-Block Probability Matrix",
-    aspect=1)
+    title = "3-Block Probability Matrix",
+    aspect = 1)
 ax2 = Axis(fig[1, 2],
-    title="Sampled Graph (n=200)",
-    aspect=1)
+    title = "Sampled Graph (n=200)",
+    aspect = 1)
 
-heatmap!(ax1, sbm_assort3, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_assort3, colormap = :binary, colorrange = (0, 1))
 hidedecorations!(ax2)
-heatmap!(ax2, A_assort3, colormap=:binary)
+heatmap!(ax2, A_assort3, colormap = :binary)
 
-Colorbar(fig[1, 3], colormap=:binary, colorrange=(0, 1), label="Probability")
+Colorbar(fig[1, 3], colormap = :binary, colorrange = (0, 1), label = "Probability")
 
 fig
 ````
@@ -118,25 +118,25 @@ that primarily connects to the core, not to itself.
 
 ````@example 02_block_models
 θ_cp = [0.8 0.4;    # Core is dense, core-periphery has medium connectivity
-    0.4 0.1]     # Periphery is sparse
+        0.4 0.1]     # Periphery is sparse
 sizes_cp = [0.3, 0.7]  # Small core (30%), large periphery (70%)
 
 sbm_cp = SBM(θ_cp, sizes_cp)
 A_cp = sample_graph(sbm_cp, 200)
 
-fig = Figure(size=(800, 350))
+fig = Figure(size = (800, 350))
 ax1 = Axis(fig[1, 1],
-    title="Core-Periphery Structure",
-    aspect=1)
+    title = "Core-Periphery Structure",
+    aspect = 1)
 ax2 = Axis(fig[1, 2],
-    title="Sampled Graph (n=200)",
-    aspect=1)
+    title = "Sampled Graph (n=200)",
+    aspect = 1)
 
-heatmap!(ax1, sbm_cp, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_cp, colormap = :binary, colorrange = (0, 1))
 hidedecorations!(ax2)
-heatmap!(ax2, A_cp, colormap=:binary)
+heatmap!(ax2, A_cp, colormap = :binary)
 
-Colorbar(fig[1, 3], colormap=:binary, colorrange=(0, 1), label="Probability")
+Colorbar(fig[1, 3], colormap = :binary, colorrange = (0, 1), label = "Probability")
 
 fig
 ````
@@ -150,29 +150,29 @@ We can create hierarchical networks with multiple levels of organization:
 
 ````@example 02_block_models
 θ_hier = [0.9 0.6 0.2 0.1;
-    0.6 0.9 0.1 0.2;
-    0.2 0.1 0.9 0.5;
-    0.1 0.2 0.5 0.9]
+          0.6 0.9 0.1 0.2;
+          0.2 0.1 0.9 0.5;
+          0.1 0.2 0.5 0.9]
 sizes_hier = [0.25, 0.25, 0.25, 0.25]
 
 sbm_hier = SBM(θ_hier, sizes_hier)
 A_hier = sample_graph(sbm_hier, 200)
 
-fig = Figure(size=(800, 350))
+fig = Figure(size = (800, 350))
 ax1 = Axis(fig[1, 1],
-    title="Hierarchical Structure",
-    xlabel="Block",
-    ylabel="Block",
-    aspect=1)
+    title = "Hierarchical Structure",
+    xlabel = "Block",
+    ylabel = "Block",
+    aspect = 1)
 ax2 = Axis(fig[1, 2],
-    title="Sampled Graph (n=200)",
-    aspect=1)
+    title = "Sampled Graph (n=200)",
+    aspect = 1)
 
-heatmap!(ax1, sbm_hier, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, sbm_hier, colormap = :binary, colorrange = (0, 1))
 hidedecorations!(ax2)
-heatmap!(ax2, A_hier, colormap=:binary)
+heatmap!(ax2, A_hier, colormap = :binary)
 
-Colorbar(fig[1, 3], colormap=:binary, colorrange=(0, 1), label="Probability")
+Colorbar(fig[1, 3], colormap = :binary, colorrange = (0, 1), label = "Probability")
 
 fig
 ````
@@ -191,12 +191,12 @@ sizes_er = [1.0]
 sbm_er = SBM(θ_er, sizes_er)
 A_er = sample_graph(sbm_er, 200)
 
-fig = Figure(size=(500, 450))
+fig = Figure(size = (500, 450))
 ax = Axis(fig[1, 1],
-    title="Erdős-Rényi G(n,p) with p=0.3",
-    aspect=1)
+    title = "Erdős-Rényi G(n,p) with p=0.3",
+    aspect = 1)
 hidedecorations!(ax)
-heatmap!(ax, A_er, colormap=:binary)
+heatmap!(ax, A_er, colormap = :binary)
 fig
 ````
 
@@ -207,7 +207,7 @@ Uniform random structure with no community organization.
 Let's compare all the structures side by side:
 
 ````@example 02_block_models
-fig = Figure(size=(1400, 350))
+fig = Figure(size = (1400, 350))
 models = [
     ("2 Communities", sbm_assort2),
     ("Core-Periphery", sbm_cp),
@@ -216,10 +216,10 @@ models = [
 ]
 
 for (i, (title, sbm)) in enumerate(models)
-    ax = Axis(fig[1, i], title=title, aspect=1)
+    ax = Axis(fig[1, i], title = title, aspect = 1)
     hidedecorations!(ax)
     A = sample_graph(sbm, 200)
-    heatmap!(ax, A, colormap=:binary)
+    heatmap!(ax, A, colormap = :binary)
 end
 
 fig
@@ -237,18 +237,18 @@ graphon_smooth = SimpleContinuousGraphon(W_smooth)
 
 sbm_from_graphon = empirical_graphon(graphon_smooth, 5)  # 5 blocks
 
-fig = Figure(size=(800, 350))
+fig = Figure(size = (800, 350))
 ax1 = Axis(fig[1, 1],
-    title="Continuous Graphon W(x,y)=xy",
-    aspect=1)
+    title = "Continuous Graphon W(x,y)=xy",
+    aspect = 1)
 ax2 = Axis(fig[1, 2],
-    title="5-Block Discretization",
-    aspect=1)
+    title = "5-Block Discretization",
+    aspect = 1)
 
-heatmap!(ax1, graphon_smooth, colormap=:binary, colorrange=(0, 1))
-heatmap!(ax2, sbm_from_graphon, colormap=:binary, colorrange=(0, 1))
+heatmap!(ax1, graphon_smooth, colormap = :binary, colorrange = (0, 1))
+heatmap!(ax2, sbm_from_graphon, colormap = :binary, colorrange = (0, 1))
 
-Colorbar(fig[1, 3], colormap=:binary, colorrange=(0, 1), label="Probability")
+Colorbar(fig[1, 3], colormap = :binary, colorrange = (0, 1), label = "Probability")
 
 fig
 ````
@@ -271,15 +271,15 @@ println(sbm_assort3.cumsize)
 When sampling with explicit latents, the latent position determines block membership:
 
 ````@example 02_block_models
-ξs = range(0, 1, length=200)
+ξs = range(0, 1, length = 200)
 A_ordered = sample_graph(sbm_assort3, ξs)
 
-fig = Figure(size=(500, 450))
+fig = Figure(size = (500, 450))
 ax = Axis(fig[1, 1],
-    title="3-Block SBM with Ordered Latents",
-    aspect=1)
+    title = "3-Block SBM with Ordered Latents",
+    aspect = 1)
 hidedecorations!(ax)
-heatmap!(ax, A_ordered, colormap=:binary)
+heatmap!(ax, A_ordered, colormap = :binary)
 fig
 ````
 
