@@ -34,16 +34,15 @@ g = SimpleContinuousGraphon((x, y) -> 0.1, SparseMatrixCSC{Bool,Int})
 - [`SBM`](@ref): Discrete stochastic block model
 - [`empirical_graphon`](@ref): Discretize a continuous graphon
 """
-struct SimpleContinuousGraphon{M,F} <: SimpleGraphon{M}
+struct SimpleContinuousGraphon{M, F} <: SimpleGraphon{M}
     f::F
 end
 
 (g::SimpleContinuousGraphon)(x, y) = g.f(x, y)
 
-function SimpleContinuousGraphon(f::F, M=BitMatrix) where {F}
-    return SimpleContinuousGraphon{M,F}(f)
+function SimpleContinuousGraphon(f::F, M = BitMatrix) where {F}
+    return SimpleContinuousGraphon{M, F}(f)
 end
-
 
 ## Stochastic Block Models
 
@@ -84,7 +83,7 @@ sbm = SBM(θ, sizes)
 - [`SimpleContinuousGraphon`](@ref): Continuous graphon representation
 - [`empirical_graphon`](@ref): Convert continuous graphon to SBM
 """
-struct SBM{P,S,S2} <: AbstractGraphon{Bool,BitMatrix}
+struct SBM{P, S, S2} <: AbstractGraphon{Bool, BitMatrix}
     θ::P
     size::S
     cumsize::S2
@@ -103,7 +102,6 @@ function (g::SBM)(x, y)
     latents_y = _convert_latent_to_block(g, y)
     return g.θ[latents_x, latents_y]
 end
-
 
 """
     empirical_graphon(f::SimpleContinuousGraphon, k::Int) -> SBM
@@ -132,7 +130,7 @@ sbm = empirical_graphon(f, 10)
 - [`SBM`](@ref): Stochastic block model type
 """
 function empirical_graphon(f::SimpleContinuousGraphon, k::Int)
-    ξs = range(0, stop=1, length=k)
+    ξs = range(0, stop = 1, length = k)
     sizes = fill(1 / k, k)
     # dirty hack to ensure sum(sizes) == 1
     sizes[end] += 1 - sum(sizes)

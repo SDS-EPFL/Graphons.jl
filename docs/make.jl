@@ -2,11 +2,13 @@ using Graphons
 using Documenter
 using Random
 using Literate
+using DocumenterCitations
 
+## literate scripts
 LITERATE_INPUT = joinpath(@__DIR__, "literate")
 LITERATE_OUTPUT = joinpath(@__DIR__, "src")
 
-for dir_path in filter(isdir, readdir(joinpath(@__DIR__, "literate"), join=true))
+for dir_path in filter(isdir, readdir(joinpath(@__DIR__, "literate"), join = true))
     dirname = basename(dir_path)
 
     for (root, _, files) in walkdir(dir_path), file in files
@@ -21,20 +23,25 @@ for dir_path in filter(isdir, readdir(joinpath(@__DIR__, "literate"), join=true)
     end
 end
 
-DocMeta.setdocmeta!(Graphons, :DocTestSetup, :(using Graphons); recursive=true)
+## citations
+bib = CitationBibliography(joinpath(@__DIR__, "src", "refs.bib"); style = :authoryear)
+
+## usual doc generation
+DocMeta.setdocmeta!(Graphons, :DocTestSetup, :(using Graphons); recursive = true)
 
 makedocs(;
-    modules=[Graphons],
-    authors="Charles Dufour,Jake Grainger",
-    repo="https://github.com/SDS-EPFL/Graphons.jl/blob/{commit}{path}#{line}",
-    sitename="Graphons.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://SDS-EPFL.github.io/Graphons.jl",
-        edit_link="main",
-        assets=String[],
+    modules = [Graphons],
+    authors = "Charles Dufour,Jake Grainger",
+    repo = "https://github.com/SDS-EPFL/Graphons.jl/blob/{commit}{path}#{line}",
+    sitename = "Graphons.jl",
+    format = Documenter.HTML(;
+        prettyurls = get(ENV, "CI", "false") == "true",
+        canonical = "https://SDS-EPFL.github.io/Graphons.jl",
+        edit_link = "main",
+        assets = String["assets/citations.css"]
     ),
-    pages=[
+    plugins = [bib],
+    pages = [
         "Home" => "index.md",
         "API Reference" => "api.md",
         "Tutorials" => [
@@ -42,16 +49,18 @@ makedocs(;
             "Getting Started with Graphons" => "tutorials/01_simple_graphon.md",
             "Stochastic Block Models" => "tutorials/02_block_models.md",
             "Multiplex Networks" => "tutorials/03_multiplex_networks.md",
+            "Stochastic Shape Models" => "tutorials/05_stochastic_shape_models.md",
             "Custom Distributions" => "tutorials/04_custom_distributions.md"
         ],
         "Design" => [
             "Graph representation" => "graphs_type.md",
             "Custom Distribution Types" => "custom_distributions.md"
         ],
-    ],
+        "References" => "references.md"
+    ]
 )
 
 deploydocs(;
-    repo="github.com/SDS-EPFL/Graphons.jl",
-    devbranch="main",
+    repo = "github.com/SDS-EPFL/Graphons.jl",
+    devbranch = "main"
 )

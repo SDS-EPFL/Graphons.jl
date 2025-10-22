@@ -66,7 +66,8 @@ using SuiteSparseGraphBLAS
         sizes = [0.5, 0.5]
 
         # Create SBM that uses GBMatrix
-        sbm_continuous = SimpleContinuousGraphon((x, y) -> begin
+        sbm_continuous = SimpleContinuousGraphon(
+            (x, y) -> begin
                 latent_x = x <= 0.5 ? 1 : 2
                 latent_y = y <= 0.5 ? 1 : 2
                 θ[latent_x, latent_y]

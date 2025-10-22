@@ -2,7 +2,6 @@
 
 rand(f::AbstractGraphon, n::Int) = rand(Random.default_rng(), f, n)
 
-
 """
     rand([rng::AbstractRNG], graphon::AbstractGraphon{T,M}, n::Int) -> M
 
@@ -49,7 +48,7 @@ W = rand(dg, 50)  # Returns Matrix{Float64}
 - [`sample_graph`](@ref): Sample with fixed latent positions
 - [`SimpleContinuousGraphon`](@ref), [`SBM`](@ref), [`DecoratedGraphon`](@ref)
 """
-function rand(rng::AbstractRNG, f::AbstractGraphon{T,M}, n::Int) where {T,M}
+function rand(rng::AbstractRNG, f::AbstractGraphon{T, M}, n::Int) where {T, M}
     return _rand!(rng, f, make_empty_graph(M, n), Base.rand(rng, n))
 end
 
@@ -63,7 +62,7 @@ end
     This function expects that `A` is an empty graph of the right size and type. It does not
     try to clean it up before filling it. See `make_empty_graph` for more details.
 """
-function _rand!(rng::AbstractRNG, f::AbstractGraphon{T,M}, A::M, ξs) where {T,M}
+function _rand!(rng::AbstractRNG, f::AbstractGraphon{T, M}, A::M, ξs) where {T, M}
     for j in axes(A, 2)
         for i in axes(A, 1)
             if i < j
@@ -87,12 +86,9 @@ function _rand!(rng::AbstractRNG, f::SimpleGraphon{M}, A::M, ξs) where {M}
     return A
 end
 
-
-
 ## known latents
 
 sample_graph(f::AbstractGraphon, args...) = sample_graph(Random.default_rng(), f, args...)
-
 
 """
     sample_graph([rng::AbstractRNG], graphon::AbstractGraphon, n::Int) -> M
@@ -144,10 +140,10 @@ A_fixed = sample_graph(g, 100) # Evenly-spaced latents
 - [`SimpleContinuousGraphon`](@ref), [`SBM`](@ref), [`DecoratedGraphon`](@ref)
 """
 function sample_graph(rng::AbstractRNG, f::AbstractGraphon, n::Int)
-    return sample_graph(rng, f, range(0, 1, length=n))
+    return sample_graph(rng, f, range(0, 1, length = n))
 end
 
-function sample_graph(rng::AbstractRNG, f::AbstractGraphon{T,M}, ξs) where {T,M}
+function sample_graph(rng::AbstractRNG, f::AbstractGraphon{T, M}, ξs) where {T, M}
     n = length(ξs)
     return _rand!(rng, f, make_empty_graph(M, n), ξs)
 end

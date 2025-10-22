@@ -62,10 +62,10 @@ using LinearAlgebra
 
     @testset "Sampling with sparse matrices" begin
         rng = MersenneTwister(111)
-        f = SimpleContinuousGraphon((x, y) -> 0.1, SparseMatrixCSC{Bool,Int})
+        f = SimpleContinuousGraphon((x, y) -> 0.1, SparseMatrixCSC{Bool, Int})
 
         A = rand(rng, f, 15)
-        @test A isa SparseMatrixCSC{Bool,Int}
+        @test A isa SparseMatrixCSC{Bool, Int}
         @test size(A) == (15, 15)
         @test issymmetric(A)
     end

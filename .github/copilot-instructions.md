@@ -179,19 +179,7 @@ Tests are split by functionality in `test/`:
   types
 - `test_sampling_rand.jl`, `test_sampling_sample_graph.jl`: Sampling functions
 - `test_integration.jl`: End-to-end workflows
-- `test_graphblas_ext.jl`: Extension tests (conditional on package
-  availability)
-
-Extension tests use conditional loading:
-
-```julia
-const PKG_AVAILABLE = try; using Package; true; catch; false; end
-if PKG_AVAILABLE
-    # tests
-else
-    @test_skip true "Package not available"
-end
-```
+- `test_graphblas_ext.jl`: Extension tests
 
 ## Development Workflows
 

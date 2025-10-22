@@ -80,7 +80,7 @@ nothing # hide
 # Let's visualize how the probability of each category varies across
 # the latent space [0,1]²:
 
-fig = Figure(size=(800, 700))
+fig = Figure(size = (800, 700))
 
 labels = [
     "Category 0\n(No edges)",
@@ -94,18 +94,18 @@ for i in 1:4
     col = (i - 1) % 2 + 1
 
     ax = Axis(fig[row, col],
-        title=labels[i],
-        xlabel="Position x",
-        ylabel="Position y",
-        aspect=1)
+        title = labels[i],
+        xlabel = "Position x",
+        ylabel = "Position y",
+        aspect = 1)
 
-    hm = heatmap!(ax, graphon_multiplex, k=i,
-        colormap=:binary,
-        colorrange=(0, 1))
+    hm = heatmap!(ax, graphon_multiplex, k = i,
+        colormap = :binary,
+        colorrange = (0, 1))
 end
 
-Colorbar(fig[:, 3], colormap=:binary, colorrange=(0, 1),
-    label="Probability")
+Colorbar(fig[:, 3], colormap = :binary, colorrange = (0, 1),
+    label = "Probability")
 
 fig
 
@@ -132,21 +132,21 @@ println("Categories present: ", unique(A_categories))
 #
 # Let's see how the categories are distributed in the sampled network:
 
-fig = Figure(size=(900, 800))
+fig = Figure(size = (900, 800))
 
 for (idx, (cat, label)) in enumerate(zip(0:3, labels))
     row = (idx - 1) ÷ 2 + 1
     col = (idx - 1) % 2 + 1
 
     ax = Axis(fig[row, col],
-        title=label * " (n=$(count(==(cat), A_categories)))",
-        aspect=1)
+        title = label * " (n=$(count(==(cat), A_categories)))",
+        aspect = 1)
     hidedecorations!(ax)
 
     A_binary = zeros(Bool, n, n)
-    A_binary[A_categories.==cat] .= true
+    A_binary[A_categories .== cat] .= true
 
-    heatmap!(ax, A_binary, colormap=:binary)
+    heatmap!(ax, A_binary, colormap = :binary)
 end
 
 fig
@@ -158,12 +158,10 @@ fig
 # For analysis, we often want separate adjacency matrices for each layer:
 
 A_layer1 = zeros(Bool, n, n)
-A_layer1[A_categories.∈Ref([1, 3])] .= true # Layer 1: present in categories 1 and 3
-
+A_layer1[A_categories .∈ Ref([1, 3])] .= true # Layer 1: present in categories 1 and 3
 
 A_layer2 = zeros(Bool, n, n)
-A_layer2[A_categories.∈Ref([2, 3])] .= true # Layer 2: present in categories 2 and 3
-
+A_layer2[A_categories .∈ Ref([2, 3])] .= true # Layer 2: present in categories 2 and 3
 
 println("Layer 1 density: ", sum(A_layer1) / (n^2) * 100, "%")
 println("Layer 2 density: ", sum(A_layer2) / (n^2) * 100, "%")
@@ -171,20 +169,20 @@ println("Overlap (both layers): ", sum(A_layer1 .& A_layer2) / (n^2) * 100, "%")
 
 # Visualize the two layers:
 
-fig = Figure(size=(900, 400))
+fig = Figure(size = (900, 400))
 
 ax1 = Axis(fig[1, 1],
-    title="Layer 1 (Distance-based)",
-    aspect=1)
+    title = "Layer 1 (Distance-based)",
+    aspect = 1)
 ax2 = Axis(fig[1, 2],
-    title="Layer 2 (Periodic)",
-    aspect=1)
+    title = "Layer 2 (Periodic)",
+    aspect = 1)
 
 hidedecorations!(ax1)
 hidedecorations!(ax2)
 
-heatmap!(ax1, A_layer1, colormap=:binary)
-heatmap!(ax2, A_layer2, colormap=:binary)
+heatmap!(ax1, A_layer1, colormap = :binary)
+heatmap!(ax2, A_layer2, colormap = :binary)
 
 fig
 
@@ -211,7 +209,7 @@ graphon_mvb = DecoratedGraphon(W_mvbernoulli)
 
 ## Create a grid to evaluate the graphon
 grid_size = 101
-x_range = range(0, 1, length=grid_size)
+x_range = range(0, 1, length = grid_size)
 
 ## Marginal probability that layer 1 has an edge
 p1 = [marginals(graphon_mvb(x, y))[1] for x in x_range, y in x_range]
@@ -224,26 +222,26 @@ corr = [correlation_matrix(graphon_mvb(x, y))[1, 2] for x in x_range, y in x_ran
 
 ## Visualize:
 
-fig = Figure(size=(900, 350))
+fig = Figure(size = (900, 350))
 
 ax1 = Axis(fig[1, 1],
-    title="P(Layer 1 edge)",
-    aspect=1)
+    title = "P(Layer 1 edge)",
+    aspect = 1)
 ax2 = Axis(fig[1, 2],
-    title="P(Layer 2 edge)",
-    aspect=1)
+    title = "P(Layer 2 edge)",
+    aspect = 1)
 ax3 = Axis(fig[1, 3],
-    title="Correlation",
-    aspect=1)
+    title = "Correlation",
+    aspect = 1)
 hidedecorations!.([ax1, ax2, ax3])
-hm1 = heatmap!(ax1, p1, colormap=:binary, colorrange=(0, 1))
-hm2 = heatmap!(ax2, p2, colormap=:binary, colorrange=(0, 1))
-hm3 = heatmap!(ax3, corr, colormap=:RdBu, colorrange=(-1, 1))
+hm1 = heatmap!(ax1, p1, colormap = :binary, colorrange = (0, 1))
+hm2 = heatmap!(ax2, p2, colormap = :binary, colorrange = (0, 1))
+hm3 = heatmap!(ax3, corr, colormap = :RdBu, colorrange = (-1, 1))
 
-Colorbar(fig[2, 1:2], hm1, vertical=false,
-    label="Probability", width=Relative(0.6), flipaxis=false)
-Colorbar(fig[2, 3], hm3, vertical=false,
-    label="Correlation", width=Relative(0.9), flipaxis=false)
+Colorbar(fig[2, 1:2], hm1, vertical = false,
+    label = "Probability", width = Relative(0.6), flipaxis = false)
+Colorbar(fig[2, 3], hm3, vertical = false,
+    label = "Correlation", width = Relative(0.9), flipaxis = false)
 
 fig
 

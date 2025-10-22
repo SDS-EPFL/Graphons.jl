@@ -10,6 +10,7 @@ SimpleContinuousGraphon
 SBM
 DecoratedGraphon
 DecoratedSBM
+SSM
 ```
 
 ## Sampling Functions
