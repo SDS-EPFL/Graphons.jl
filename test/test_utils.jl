@@ -17,7 +17,7 @@ using SparseArrays
         @test all(.!B)
 
         # Test sparse matrix creation
-        C = Graphons.make_empty_graph(SparseMatrixCSC{Float64,Int}, 3)
+        C = Graphons.make_empty_graph(SparseMatrixCSC{Float64, Int}, 3)
         @test size(C) == (3, 3)
         @test eltype(C) == Float64
         @test nnz(C) == 0

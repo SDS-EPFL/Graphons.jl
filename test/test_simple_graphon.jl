@@ -14,7 +14,7 @@ using Test
         @test g(0.0, 1.0) ≈ 0.0
 
         # Test with custom matrix type
-        h = SimpleContinuousGraphon((x, y) -> 0.3, SparseMatrixCSC{Bool,Int})
+        h = SimpleContinuousGraphon((x, y) -> 0.3, SparseMatrixCSC{Bool, Int})
         @test h(0.1, 0.2) == 0.3
     end
 

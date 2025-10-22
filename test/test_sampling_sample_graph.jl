@@ -35,7 +35,7 @@ using LinearAlgebra
         rng1 = MersenneTwister(555)
         rng2 = MersenneTwister(555)
         f = SimpleContinuousGraphon((x, y) -> 0.5)
-        ξs = range(0, 1, length=5)
+        ξs = range(0, 1, length = 5)
 
         A1 = sample_graph(rng1, f, ξs)
         A2 = sample_graph(rng2, f, ξs)
