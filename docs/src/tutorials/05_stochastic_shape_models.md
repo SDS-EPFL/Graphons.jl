@@ -4,8 +4,8 @@ EditURL = "../../literate/tutorials/05_stochastic_shape_models.jl"
 
 # Stochastic Shape Models
 
-This tutorial introduces **Stochastic Shape Models (SSMs)**, a powerful extension of
-Stochastic Block Models that reduces the number of parameters while maintaining the
+This tutorial introduces **Stochastic Shape Models (SSMs)**, an extension of
+Stochastic Block Models that reduces the number of parameters while improving the
 flexibility to model complex network structures.
 
 SSMs address a fundamental challenge in network modeling: standard SBMs with k blocks
@@ -25,10 +25,21 @@ The key insight: many block pairs can share the same connectivity pattern!
 
 ### Mathematical Formulation
 
-For nodes i and j in blocks b(i) and b(j), the edge probability is:
+Definition 2.1 (Stochastic Shape Model $(S S M)$ ). Assume we have defined
+$s \in \mathbb{N}^{+}$nonintersecting closed regions in $\mathcal{T}=[0,1]^2 \cap\{x \leq y\}$, let us call them $S_c$ for $c \in[s]$.
+Define $S_s=\mathcal{T} \backslash\left\{\cup_{c<s} S_c\right\}$. We can then define the function $f$ for the $s$ constants $0<\theta_c<1$, for $c \in[s]$ to be
 
 ```math
-P(\text{edge}_{i,j}) = \theta_{\Psi(b(i), b(j))}
+f(x, y)=\left\{\begin{array}{lll}
+\theta_c & \text { if } & (x, y) \in S_c \\
+\theta_c & \text { if } & (y, x) \in S_c
+\end{array} .\right.
+```
+
+For nodes i and j with latent positions $ξ_i$ and $ξ_j$
+
+```math
+\mathbb{P}(A_{i,j} = 1) = f(ξ_i, ξ_j) = \theta_{c} \quad \text{if } (ξ_i, ξ_j) \in S_c
 ```
 
 Instead of k² unique probabilities, we only need S parameters where S << k².
@@ -460,118 +471,6 @@ analyze_shape_assignments(ssm_modular)
 
 This helps understand how parameter sharing works in the model.
 
-## Comparison with Standard SBM
-
-Let's compare the same network structure using both SSM and SBM:
-
-SSM version (4 shapes):
-
-````@example 05_stochastic_shape_models
-ssm_compare = ssm_modular
-````
-
-Equivalent SBM (16 parameters):
-
-````@example 05_stochastic_shape_models
-sbm_compare = Graphons.convert_to_sbm(ssm_compare)
-````
-
-Sample from both:
-
-````@example 05_stochastic_shape_models
-Random.seed!(123)
-A_ssm = sample_graph(ssm_compare, 200)
-
-Random.seed!(123)
-A_sbm = sample_graph(sbm_compare, 200)
-````
-
-Verify they're identical:
-
-````@example 05_stochastic_shape_models
-println("SSM and SBM produce identical graphs: ", A_ssm == A_sbm)
-
-fig = Figure(size = (900, 400))
-
-ax1 = Axis(fig[1, 1],
-    title = "SSM (4 parameters)\nShapes: [0.9, 0.6, 0.2, 0.05]",
-    aspect = 1)
-
-ax2 = Axis(fig[1, 2],
-    title = "Equivalent SBM (16 parameters)\n4×4 full matrix",
-    aspect = 1)
-
-hidedecorations!.([ax1, ax2])
-heatmap!(ax1, A_ssm, colormap = :binary)
-heatmap!(ax2, A_sbm, colormap = :binary)
-
-fig
-````
-
-**Identical networks**, but SSM uses 75% fewer parameters!
-
-## Advanced: Random Shape Assignments
-
-For exploratory modeling, we can create SSMs with random shape assignments
-to see what structures emerge:
-
-````@example 05_stochastic_shape_models
-function random_ssm(K, S, rng = Random.GLOBAL_RNG)
-    θ = sort(rand(rng, S), rev = true)
-
-    assignments = rand(rng, 1:S, K, K)
-    block_pair_to_shape = (assignments + assignments') .÷ 2
-
-    sizes = rand(rng, K)
-    sizes ./= sum(sizes)
-
-    return SSM(θ, block_pair_to_shape, sizes, cumsum(sizes))
-end
-
-Random.seed!(789)
-ssm_random = random_ssm(6, 3)
-
-A_random = sample_graph(ssm_random, 180)
-
-fig = Figure(size = (1100, 400))
-
-ax1 = Axis(fig[1, 1],
-    title = "Random Shape Assignment",
-    aspect = 1)
-
-ax2 = Axis(fig[1, 2],
-    title = "Equivalent Probability Matrix",
-    aspect = 1)
-
-ax3 = Axis(fig[1, 3],
-    title = "Sampled Random SSM",
-    aspect = 1)
-
-heatmap!(ax1, ssm_random.block_pair_to_shape, colormap = :tab10)
-hm = heatmap!(ax2, ssm_random, colormap = :binary, colorrange = (0, 1))
-hidedecorations!(ax3)
-heatmap!(ax3, A_random, colormap = :binary)
-
-Colorbar(fig[1, 4], hm, label = "Edge probability")
-
-fig
-````
-
-Random SSMs can generate surprisingly diverse structures!
-
-## Key Takeaways
-
-- **Stochastic Shape Models** reduce parameters by sharing connectivity patterns (shapes) across block pairs
-- An SSM with k blocks and S shapes uses only S parameters instead of k² parameters
-- Shape assignments are encoded in a k×k matrix Ψ that maps block pairs to shapes
-- SSMs are ideal for:
-  - Large networks with many blocks but limited data
-  - Hierarchical or modular structures with repeating patterns
-  - Parsimonious, interpretable models
-- Every SSM can be converted to an equivalent SBM using `convert_to_sbm()`
-- Decorated SSMs combine parameter efficiency with rich edge attributes (weights, distributions)
-- Use `get_theta_matrix()` to visualize the full probability matrix from shapes
-
 ## References
 
 Stochastic Shape Models were introduced in [verdeyme_hybrid_2024](@cite)
@@ -656,21 +555,36 @@ We can now visualize the difference between the SBM and SSM approximations:
 fig = Figure(size = (1000, 500))
 
 for i in 1:4
-    ax = Axis(fig[1, i],
+    ax = Axis(fig[1:2, i],
         title = "Category $i",
         aspect = 1)
     hidedecorations!(ax)
     hm = heatmap!(ax, sbm_w3, k = i, colormap = :binary, colorrange = (0, 1))
-    ax2 = Axis(fig[2, i],
+    ax2 = Axis(fig[3:4, i],
         aspect = 1)
     hidedecorations!(ax2)
     hm = heatmap!(ax2, ssm_w3, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[1, 5], colormap = :binary, colorrange = (0, 1),
+Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
     label = "Probability", height = Relative(0.8))
 
 fig
+````
+
+We can also measure the approximation error using mean squared error (MSE):
+
+````@example 05_stochastic_shape_models
+sum_squared_errors(x, y) = sum((x .- y) .^ 2)
+function mse(graphon1, graphon2, xs = 0:0.01:1)
+    mean(
+        sum_squared_errors(params(graphon1(x, y))[2], params(graphon2(x, y))[2])
+    for x in xs, y in xs)
+end
+mse_sbm = mse(graphon_w3, sbm_w3)
+mse_ssm = mse(graphon_w3, ssm_w3)
+println("MSE of SBM approximation: ", round(mse_sbm, digits = 5))
+println("MSE of SSM approximation: ", round(mse_ssm, digits = 5))
 ````
 
 ---
