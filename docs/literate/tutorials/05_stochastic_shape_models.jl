@@ -456,10 +456,10 @@ fig
 
 # ### Comparing SBM vs SSM Approximations
 #
+k = 10
 
 # Create a standard SBM approximation with k=10 blocks:
-k_blocks = 15
-sbm_w3 = empirical_graphon(graphon_w3, k_blocks)
+sbm_w3 = empirical_graphon(graphon_w3, k)
 
 # For the SSM, we'll use fewer shapes (s=30) than the SBM parameters (k(k+1)/2=120):
 # This demonstrates the parameter efficiency of SSMs.
@@ -467,7 +467,8 @@ sbm_w3 = empirical_graphon(graphon_w3, k_blocks)
 # `Clustering` package and use the `SSM` constructor:
 using Clustering
 
-ssm_w3 = SSM(sbm_w3, 30)
+s = 10
+ssm_w3 = SSM(sbm_w3, s)
 
 # We can now visualize the difference between the SBM and SSM approximations:
 
@@ -490,6 +491,47 @@ Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
 
 fig
 
+# We can also automatically estimate the optimal number of shapes for the SSM
+
+k_big = 22
+sbm_big = empirical_graphon(graphon_w3, k_big)
+
+latents = collect(rand(Uniform(0, 1), 1000))
+A = sample_graph(graphon_w3, latents)
+
+shape_range = 1:(k_big * (k_big + 1) ÷ 2 - 1)
+ssm_estimated, criterion_values = Graphons.estimate_ssm(
+    sbm_big, A, latents, shape_range)
+
+using Kneedle
+kr = kneedle(shape_range, criterion_values, "convex_dec", 1, scan_type = :smoothing)
+#  Let's extract the optimal number of shapes using the Kneedle algorithm:
+
+k_opt = knees(kr)[1]
+println("Optimal number of shapes selected: $k_opt")
+
+# let's compare the knee-estimated SSM with the argmin  SSM:
+ssm_knee = SSM(sbm_big, k_opt)
+
+fig = Figure(size = (1000, 500))
+
+for i in 1:4
+    ax = Axis(fig[1:2, i],
+        title = "Category $i",
+        aspect = 1)
+    hidedecorations!(ax)
+    hm = heatmap!(ax, sbm_big, k = i, colormap = :binary, colorrange = (0, 1))
+    ax2 = Axis(fig[3:4, i],
+        aspect = 1)
+    hidedecorations!(ax2)
+    hm = heatmap!(ax2, ssm_knee, k = i, colormap = :binary, colorrange = (0, 1))
+end
+
+Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
+    label = "Probability", height = Relative(0.8))
+
+fig
+
 # We can also measure the approximation error using mean squared error (MSE):
 
 sum_squared_errors(x, y) = sum((x .- y) .^ 2)
@@ -498,7 +540,28 @@ function mse(graphon1, graphon2, xs = 0:0.01:1)
         sum_squared_errors(params(graphon1(x, y))[2], params(graphon2(x, y))[2])
     for x in xs, y in xs)
 end
-mse_sbm = mse(graphon_w3, sbm_w3)
-mse_ssm = mse(graphon_w3, ssm_w3)
+mse_sbm = mse(graphon_w3, sbm_big)
+mse_ssm_estimated = mse(graphon_w3, ssm_knee)
 println("MSE of SBM approximation: ", round(mse_sbm, digits = 5))
-println("MSE of SSM approximation: ", round(mse_ssm, digits = 5))
+println("MSE of SSM approximation: ", round(mse_ssm_estimated, digits = 5))
+
+# loss comparison
+mses = zeros(length(shape_range) + 1)
+mses[end] = mse(graphon_w3, sbm_big)
+for (index, s) in enumerate(shape_range)
+    ssm_temp = SSM(sbm_big, s)
+    mses[index] = mse(graphon_w3, ssm_temp)
+end
+
+fig = Figure(size = (600, 400))
+ax = Axis(fig[1, 1],
+    xlabel = "Number of Shapes",
+    ylabel = "Mean Squared Error (MSE)",
+    yscale = log10)
+lines!(ax, 1:(k_big * (k_big + 1) ÷ 2), mses)
+vlines!(ax, k_opt, color = :red, linestyle = :dash,
+    label = "Kneedle selected shapes: $k_opt")
+scatter!(ax, [k_big * (k_big + 1) ÷ 2], [mses[end]], color = :black,
+    label = "SBM MSE")
+axislegend(ax)
+fig
