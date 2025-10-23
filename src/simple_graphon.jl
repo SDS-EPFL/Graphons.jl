@@ -137,3 +137,6 @@ function empirical_graphon(f::SimpleContinuousGraphon, k::Int)
     θ = [f(ξs[i], ξs[j]) for i in 1:k, j in 1:k]
     return SBM(θ, sizes)
 end
+
+get_theta_matrix(sbm::SBM) = sbm.θ
+params(sbm::SBM) = (sbm.θ, sbm.size)
