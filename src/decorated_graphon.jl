@@ -163,3 +163,6 @@ function empirical_graphon(f::DecoratedGraphon{T, M, F, D}, k::Int) where {T, M,
     θ = [f(ξs[i], ξs[j]) for i in 1:k, j in 1:k]
     return DecoratedSBM(θ, sizes, M)
 end
+
+get_theta_matrix(sbm::DecoratedSBM) = sbm.θ
+params(sbm::DecoratedSBM) = (params.(sbm.θ), sbm.size)

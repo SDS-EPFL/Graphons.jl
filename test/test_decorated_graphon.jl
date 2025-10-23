@@ -26,4 +26,12 @@ using Distributions
         @test size(sbm.θ) == (3, 3)
         @test sum(sbm.size) ≈ 1.0
     end
+
+    @testset "Accessors" begin
+        f = DecoratedGraphon((x, y) -> Normal(x + y, 0.1))
+        sbm = empirical_graphon(f, 10)
+
+        @test Graphons.get_theta_matrix(sbm) == sbm.θ
+        @test params(sbm)[1] == params.(sbm.θ)
+    end
 end

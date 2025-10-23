@@ -72,3 +72,5 @@ function convert_to_sbm(ssm::SSM{T, M, V, B, S, S2}) where {T, M, V, B, S, S2}
     end
     return DecoratedSBM(θ_matrix, ssm.size, M)
 end
+
+function estimate_ssm end

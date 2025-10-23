@@ -63,4 +63,13 @@ using Random
         sbm = SBM([0.8 0.2; 0.2 0.7], [0.5, 0.5])
         @inferred sbm(0.3, 0.7)
     end
+
+    @testset "Accessors" begin
+        θ = [0.9 0.1 0.2; 0.1 0.8 0.1; 0.2 0.1 0.7]
+        sizes = [0.3, 0.5, 0.2]
+        sbm = SBM(θ, sizes)
+
+        @test Graphons.get_theta_matrix(sbm) == θ
+        @test params(sbm) == (θ, sizes)
+    end
 end
