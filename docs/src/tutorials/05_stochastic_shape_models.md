@@ -588,22 +588,26 @@ A = sample_graph(graphon_w3, latents)
 shape_range = 1:(k_big * (k_big + 1) ÷ 2 - 1)
 ssm_estimated, criterion_values = Graphons.estimate_ssm(
     sbm_big, A, latents, shape_range)
-
-using Kneedle
-kr = kneedle(shape_range, criterion_values, "convex_dec", 1, scan_type = :smoothing)
 ````
 
- Let's extract the optimal number of shapes using the Kneedle algorithm:
+We can plot the BIC values to find the optimal number of shapes:
 
 ````@example 05_stochastic_shape_models
-k_opt = knees(kr)[1]
-println("Optimal number of shapes selected: $k_opt")
+fig = Figure(size = (600, 400))
+ax = Axis(fig[1, 1],
+    xlabel = "Number of Shapes",
+    ylabel = "BIC Value")
+lines!(ax, shape_range, criterion_values)
+scatter!(ax, [30], [criterion_values[30]], marker = :square,
+    color = :red, label = "potential elbow")
+fig
 ````
 
 let's compare the knee-estimated SSM with the argmin  SSM:
 
 ````@example 05_stochastic_shape_models
-ssm_knee = SSM(sbm_big, k_opt)
+k_knee = 33
+ssm_knee = SSM(sbm_big, k_knee)
 
 fig = Figure(size = (1000, 500))
 
@@ -656,8 +660,8 @@ ax = Axis(fig[1, 1],
     ylabel = "Mean Squared Error (MSE)",
     yscale = log10)
 lines!(ax, 1:(k_big * (k_big + 1) ÷ 2), mses)
-vlines!(ax, k_opt, color = :red, linestyle = :dash,
-    label = "Kneedle selected shapes: $k_opt")
+vlines!(ax, k_knee, color = :red, linestyle = :dash,
+    label = "Elbow selected shapes: $k_knee")
 scatter!(ax, [k_big * (k_big + 1) ÷ 2], [mses[end]], color = :black,
     label = "SBM MSE")
 axislegend(ax)

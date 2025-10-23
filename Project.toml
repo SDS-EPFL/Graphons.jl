@@ -12,14 +12,14 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StatsAPI = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 
 [weakdeps]
+Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 SuiteSparseGraphBLAS = "c2e53296-7b14-11e9-1210-bddfa8111e1d"
-Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 
 [extensions]
+ClusteringExt = "Clustering"
 MakieExt = "Makie"
 SuiteSparseGraphBLASExt = "SuiteSparseGraphBLAS"
-ClusteringExt = "Clustering"
 
 [compat]
 ArgCheck = "2.0.0"
