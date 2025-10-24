@@ -491,19 +491,24 @@ Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
 
 fig
 
-# We can also automatically estimate the optimal number of shapes for the SSM
+# We can also automatically estimate the optimal number of shapes for the SSM. First let's build
+# a larger SBM approximation to have a better starting point:
 
 k_big = 22
 sbm_big = empirical_graphon(graphon_w3, k_big)
 
+# Now let's sample a graph to be able to compute a criterion for model selection:
+
 latents = collect(rand(Uniform(0, 1), 1000))
 A = sample_graph(graphon_w3, latents)
+
+# We are now ready to estimate the SSM with model selection over a range of shapes:
 
 shape_range = 1:(k_big * (k_big + 1) ÷ 2 - 1)
 ssm_estimated, criterion_values = Graphons.estimate_ssm(
     sbm_big, A, latents, shape_range)
 
-# We can plot the BIC values to find the optimal number of shapes:
+# We can plot the BIC values to find the number of shapes that minimizes the criterion:
 fig = Figure(size = (600, 400))
 ax = Axis(fig[1, 1],
     xlabel = "Number of Shapes",
@@ -514,7 +519,14 @@ scatter!(ax, [30], [criterion_values[30]], marker = :square,
 fig
 
 # let's compare the knee-estimated SSM with the argmin  SSM:
-k_knee = 33
+using Kneedle
+kr = kneedle(shape_range, criterion_values, "convex_dec", 1, scan_type = :smoothing)
+#  Let's extract the optimal number of shapes using the Kneedle algorithm:
+
+k_knee = knees(kr)[1]
+println("Optimal number of shapes selected: $k_knee")
+
+# let's compare the knee-estimated SSM with the argmin  SSM:
 ssm_knee = SSM(sbm_big, k_knee)
 
 fig = Figure(size = (1000, 500))
@@ -524,7 +536,7 @@ for i in 1:4
         title = "Category $i",
         aspect = 1)
     hidedecorations!(ax)
-    hm = heatmap!(ax, sbm_big, k = i, colormap = :binary, colorrange = (0, 1))
+    hm = heatmap!(ax, ssm_estimated, k = i, colormap = :binary, colorrange = (0, 1))
     ax2 = Axis(fig[3:4, i],
         aspect = 1)
     hidedecorations!(ax2)
@@ -545,9 +557,11 @@ function mse(graphon1, graphon2, xs = 0:0.01:1)
     for x in xs, y in xs)
 end
 mse_sbm = mse(graphon_w3, sbm_big)
-mse_ssm_estimated = mse(graphon_w3, ssm_knee)
+mse_ssm_estimated = mse(graphon_w3, ssm_estimated)
+mse_ssm_knee = mse(graphon_w3, ssm_knee)
 println("MSE of SBM approximation: ", round(mse_sbm, digits = 5))
-println("MSE of SSM approximation: ", round(mse_ssm_estimated, digits = 5))
+println("MSE of argmin SSM approximation: ", round(mse_ssm_estimated, digits = 5))
+println("MSE of knee SSM approximation: ", round(mse_ssm_knee, digits = 5))
 
 # loss comparison
 mses = zeros(length(shape_range) + 1)
@@ -565,7 +579,10 @@ ax = Axis(fig[1, 1],
 lines!(ax, 1:(k_big * (k_big + 1) ÷ 2), mses)
 vlines!(ax, k_knee, color = :red, linestyle = :dash,
     label = "Elbow selected shapes: $k_knee")
-scatter!(ax, [k_big * (k_big + 1) ÷ 2], [mses[end]], color = :black,
-    label = "SBM MSE")
+vlines!(ax, shape_range[argmin(criterion_values)], color = :black, linestyle = :dash,
+    label = "Argmin selected shapes: $(argmin(criterion_values))")
+scatter!(ax, [k_big * (k_big + 1) ÷ 2], [mses[end]], color = :black, marker = :rect,
+    label = "SBM")
+
 axislegend(ax)
 fig

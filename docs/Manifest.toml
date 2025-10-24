@@ -2,7 +2,7 @@
 
 julia_version = "1.12.0"
 manifest_format = "2.0"
-project_hash = "fe1b8756ab78c85a59e7bcaf43dce499d6fbbb84"
+project_hash = "cdaf7885a319d47279cbf29bb1111ffd5bed4c1f"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -530,9 +530,9 @@ version = "3.7.0+0"
 
 [[deps.Git_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Libiconv_jll", "OpenSSL_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "e2aef26f7d273f1e5b1daba56837c47b49b4388f"
+git-tree-sha1 = "96fbb1a5c700942301cf65d8546690dd3b2a6a79"
 uuid = "f8c6e375-362e-5223-8a59-34ff63f689eb"
-version = "2.51.1+0"
+version = "2.51.2+0"
 
 [[deps.Glib_jll]]
 deps = ["Artifacts", "GettextRuntime_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
@@ -799,6 +799,16 @@ git-tree-sha1 = "ba51324b894edaf1df3ab16e2cc6bc3280a2f1a7"
 uuid = "5ab0869b-81aa-558d-bb23-cbf5423bbe9b"
 version = "0.6.10"
 
+[[deps.Kneedle]]
+deps = ["ArgCheck", "Loess", "PrecompileTools", "Random", "SpecialFunctions"]
+git-tree-sha1 = "52c58c31a9ab24212a247425099a81c19ee4bf69"
+uuid = "4ef9287f-f14a-4b13-b4c1-9bb5ae54399a"
+version = "0.1.3"
+weakdeps = ["Makie"]
+
+    [deps.Kneedle.extensions]
+    KneedleMakieExt = "Makie"
+
 [[deps.Kronecker]]
 deps = ["LinearAlgebra", "NamedDims", "SparseArrays", "StatsBase"]
 git-tree-sha1 = "9253429e28cceae6e823bec9ffde12460d79bb38"
@@ -930,6 +940,12 @@ deps = ["HTTP", "LoggingExtras", "MIMEs", "Sockets", "Test"]
 git-tree-sha1 = "9f65b8a9989e6acb6e216785dd0c748d9569fc9b"
 uuid = "16fef848-5104-11e9-1b77-fb7a48bbb589"
 version = "1.5.0"
+
+[[deps.Loess]]
+deps = ["Distances", "LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "f749e7351f120b3566e5923fefdf8e52ba5ec7f9"
+uuid = "4345ca2d-374a-55d4-8d30-97f9976e7612"
+version = "0.6.4"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
