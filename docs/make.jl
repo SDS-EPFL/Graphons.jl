@@ -62,5 +62,4 @@ makedocs(;
 
 deploydocs(;
     repo = "github.com/SDS-EPFL/Graphons.jl",
-    devbranch = "main"
 )
