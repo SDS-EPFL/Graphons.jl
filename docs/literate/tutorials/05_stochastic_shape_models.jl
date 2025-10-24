@@ -500,21 +500,24 @@ sbm_big = empirical_graphon(graphon_w3, k_big)
 # Now let's sample a graph to be able to compute a criterion for model selection:
 
 latents = collect(rand(Uniform(0, 1), 1000))
-A = sample_graph(graphon_w3, latents)
+A = sample_graph(graphon_w3, latents);
 
 # We are now ready to estimate the SSM with model selection over a range of shapes:
 
 shape_range = 1:(k_big * (k_big + 1) ÷ 2 - 1)
 ssm_estimated, criterion_values = Graphons.estimate_ssm(
     sbm_big, A, latents, shape_range)
+index_argmin = argmin(criterion_values)
+k_opt = shape_range[index_argmin]
+println("Optimal number of shapes selected by argmin: $k_opt")
 
 # We can plot the BIC values to find the number of shapes that minimizes the criterion:
-fig = Figure(size = (600, 400))
+fig = Figure(size = (600, 200))
 ax = Axis(fig[1, 1],
     xlabel = "Number of Shapes",
     ylabel = "BIC Value")
 lines!(ax, shape_range, criterion_values)
-scatter!(ax, [30], [criterion_values[30]], marker = :square,
+scatter!(ax, [k_opt], [criterion_values[index_argmin]], marker = :rect,
     color = :red, label = "potential elbow")
 fig
 
@@ -570,19 +573,18 @@ for (index, s) in enumerate(shape_range)
     ssm_temp = SSM(sbm_big, s)
     mses[index] = mse(graphon_w3, ssm_temp)
 end
+s_sbm = k_big * (k_big + 1) ÷ 2
 
-fig = Figure(size = (600, 400))
+fig = Figure(size = (600, 200))
 ax = Axis(fig[1, 1],
     xlabel = "Number of Shapes",
-    ylabel = "Mean Squared Error (MSE)",
-    yscale = log10)
-lines!(ax, 1:(k_big * (k_big + 1) ÷ 2), mses)
-vlines!(ax, k_knee, color = :red, linestyle = :dash,
-    label = "Elbow selected shapes: $k_knee")
-vlines!(ax, shape_range[argmin(criterion_values)], color = :black, linestyle = :dash,
-    label = "Argmin selected shapes: $(argmin(criterion_values))")
-scatter!(ax, [k_big * (k_big + 1) ÷ 2], [mses[end]], color = :black, marker = :rect,
-    label = "SBM")
+    ylabel = "Mean Squared Error",
+    yscale = log10,
+    xticks = [0, 33, 58, 100, 200, s_sbm])
+lines!(ax, 1:s_sbm, mses)
+scatter!(ax, k_knee, mses[k_knee], color = :red, marker = :rect, label = "Elbow")
+scatter!(ax, k_opt, mses[k_opt], color = :black, marker = :rect, label = "Argmin")
+scatter!(ax, s_sbm, mses[end], marker = :rect, label = "SBM")
 
 axislegend(ax)
 fig
