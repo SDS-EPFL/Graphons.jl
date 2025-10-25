@@ -3,6 +3,7 @@ module ClusteringExt
 using Graphons
 using ArgCheck
 using Clustering
+using Random
 import Distributions: support, DiscreteNonParametric, params, logpdf
 
 import Graphons: SSM, upper_triangular_to_full, matrix_type, _extract_param,
@@ -10,24 +11,26 @@ import Graphons: SSM, upper_triangular_to_full, matrix_type, _extract_param,
 
 export SSM, estimate_ssm
 
-function SSM(sbm::Union{SBM, DecoratedSBM}, num_shapes::Int)
+function SSM(sbm::Union{SBM, DecoratedSBM}, num_shapes::Int,
+        rng::AbstractRNG = Random.default_rng())
     @argcheck num_shapes>0 "Number of shapes must be positive."
     K = length(sbm.size)
     @assert num_shapes<K * (K + 1) / 2 "Number of shapes must be less than number of unique block pairs."
 
     # k-means++
     X = _extract_params_triu(sbm)
-    θ, block_pair_to_shape = _ssm_params(X, num_shapes, sbm)
+    θ, block_pair_to_shape = _ssm_params(X, num_shapes, sbm, rng)
     return Graphons.SSM(θ, block_pair_to_shape, sbm.size, sbm.cumsize, matrix_type(sbm))
 end
 
-function estimate_ssm(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range)
+function estimate_ssm(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range,
+        rng::AbstractRNG = Random.default_rng())
     best_ssm = nothing
     best_criterion_value = Inf
     criterion_values = zeros(length(shape_range))
     X = _extract_params_triu(sbm)
     for (i, num_shapes) in enumerate(shape_range)
-        ssm = SSM(_ssm_params(X, num_shapes, sbm)..., sbm.size, sbm.cumsize)
+        ssm = SSM(_ssm_params(X, num_shapes, sbm, rng)..., sbm.size, sbm.cumsize)
         criterion_value = bic(ssm, A, latents)
         criterion_values[i] = criterion_value
         if criterion_value < best_criterion_value
@@ -38,8 +41,9 @@ function estimate_ssm(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range)
     return best_ssm, criterion_values
 end
 
-function SSM(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range)
-    first(estimate_ssm(sbm, A, latents, shape_range))
+function SSM(sbm::Union{SBM, DecoratedSBM}, A, latents,
+        shape_range, rng::AbstractRNG = Random.default_rng())
+    first(estimate_ssm(sbm, A, latents, shape_range, rng))
 end
 
 @inline function logprob(model::SimpleGraphon, A, ξ_i, ξ_j)
@@ -74,8 +78,8 @@ end
 ## Helper functions for shape models estimation from Block models
 ## =========================================================================================
 
-function _ssm_params(X, num_shapes, sbm)
-    res = kmeans(X, num_shapes, init = :kmpp)
+function _ssm_params(X, num_shapes, sbm, rng::AbstractRNG = Random.default_rng())
+    res = kmeans(X, num_shapes, init = :kmpp, rng = rng)
     block_pair_to_shape = upper_triangular_to_full(assignments(res))
     θ = convert_to_params(res.centers, sbm)
     return θ, block_pair_to_shape
