@@ -68,13 +68,7 @@ function bic(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
     @inbounds for j in eachindex(latents)
         for i in eachindex(latents)
             if i < j
-                #TODO: fix this
-                inter = logprob(model, A[i, j], latents[i], latents[j])
-                if isfinite(inter)
-                    ll += inter
-                else
-                    ll += log(eps())
-                end
+                ll += logprob(model, A[i, j], latents[i], latents[j])
             end
         end
     end
