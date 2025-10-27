@@ -6,7 +6,7 @@ using StaticArrays
 import Base.rand
 using ArgCheck
 import Distributions: DiscreteMultivariateDistribution, UnivariateDistribution,
-                      MultivariateDistribution, DiscreteNonParametric
+                      MultivariateDistribution, DiscreteNonParametric, support
 import StatsAPI: params
 """
     AbstractGraphon{T,M}

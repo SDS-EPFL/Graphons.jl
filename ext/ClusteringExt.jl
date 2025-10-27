@@ -7,7 +7,8 @@ using Random
 import Distributions: support, DiscreteNonParametric, params, logpdf
 
 import Graphons: SSM, upper_triangular_to_full, matrix_type, _extract_param,
-                 _convert_latent_to_block, SimpleGraphon, AbstractGraphon, estimate_ssm
+                 _convert_latent_to_block, SimpleGraphon, AbstractGraphon, estimate_ssm,
+                 _extract_params_triu, convert_to_params
 
 export SSM, estimate_ssm
 
@@ -67,7 +68,13 @@ function bic(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
     @inbounds for j in eachindex(latents)
         for i in eachindex(latents)
             if i < j
-                ll += logprob(model, A[i, j], latents[i], latents[j])
+                #TODO: fix this
+                inter = logprob(model, A[i, j], latents[i], latents[j])
+                if isfinite(inter)
+                    ll += inter
+                else
+                    ll += log(eps())
+                end
             end
         end
     end
@@ -83,33 +90,6 @@ function _ssm_params(X, num_shapes, sbm, rng::AbstractRNG = Random.default_rng()
     block_pair_to_shape = upper_triangular_to_full(assignments(res))
     θ = convert_to_params(res.centers, sbm)
     return θ, block_pair_to_shape
-end
-
-function _extract_params_triu(sbm::SBM)
-    K = length(sbm.size)
-    return reduce(hcat, sbm.θ[row, col] for col in 1:K for row in 1:col)
-end
-
-function _extract_params_triu(dsbm::DecoratedSBM)
-    K = length(dsbm.size)
-    return reduce(
-        hcat, Graphons._extract_param(dsbm.θ[row, col], :) for col in 1:K for row in 1:col)
-end
-
-function convert_to_params(centers, ::SBM)
-    return [centers[i] for i in axes(centers, 2)]
-end
-
-function convert_to_params(centers, ::DecoratedSBM{D}) where {D}
-    return [D(centers[:, i]...) for i in axes(centers, 2)]
-end
-
-# specialization for DiscreteNonParametric as it requires support to be specified
-function convert_to_params(centers,
-        sbm::DecoratedSBM{DiscreteNonParametric{T, P, Ts, Ps}}) where {T, P, Ts, Ps}
-    s = support(sbm.θ[1, 1])
-    return [DiscreteNonParametric{T, P, Ts, Ps}(s, convert(Ps, centers[:, i]))
-            for i in axes(centers, 2)]
 end
 
 end
