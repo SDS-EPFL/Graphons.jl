@@ -58,7 +58,7 @@ function _extract_param(d, k)
 end
 
 function _extract_param(d::DiscreteNonParametric, k)
-    return params(d)[2][k]
+    return probs(d)[k]
 end
 
 _extract_param(d) = _extract_param(d, :)
