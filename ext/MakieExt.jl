@@ -19,7 +19,7 @@ function Makie.convert_arguments(
     return (x, x, [graphon(x, y) for x in x, y in x])
 end
 
-function Makie.convert_arguments(::Type{<:AbstractPlot}, graphon::SBM; res = 0.01)
+function Makie.convert_arguments(::Type{<:Heatmap}, graphon::SBM; res = 0.01)
     x = 0:res:1
     ξs = map(x -> _convert_latent_to_block(graphon, x), x)
     # Makie expects `(xs::Vector{Float32}, ys::Vector{Float32}, zs::Matrix{Float32})`

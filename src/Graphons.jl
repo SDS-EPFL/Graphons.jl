@@ -8,6 +8,8 @@ using ArgCheck
 import Distributions: DiscreteMultivariateDistribution, UnivariateDistribution,
                       MultivariateDistribution, DiscreteNonParametric, support, probs
 import StatsAPI: params
+using SpecialFunctions: gamma
+
 """
     AbstractGraphon{T,M}
 
@@ -75,11 +77,11 @@ end
 edge_type(g::AbstractGraphon) = edge_type(typeof(g))
 matrix_type(g::AbstractGraphon) = matrix_type(typeof(g))
 
-include("utils.jl")
 include("sampling.jl")
 include("simple_graphon.jl")
 include("decorated_graphon.jl")
 include("stochastic_shape_model.jl")
+include("utils.jl")
 
 export rand, sample_graph
 export SBM, SimpleContinuousGraphon, empirical_graphon
