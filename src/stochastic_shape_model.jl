@@ -73,4 +73,32 @@ function convert_to_sbm(ssm::SSM{T, M, V, B, S, S2}) where {T, M, V, B, S, S2}
     return DecoratedSBM(θ_matrix, ssm.size, M)
 end
 
+## for ssm params conversion in clustering extension
 function estimate_ssm end
+
+function _extract_params_triu(sbm::SBM)
+    K = length(sbm.size)
+    return reduce(hcat, sbm.θ[row, col] for col in 1:K for row in 1:col)
+end
+
+function _extract_params_triu(dsbm::DecoratedSBM)
+    K = length(dsbm.size)
+    return reduce(
+        hcat, _extract_param(dsbm.θ[row, col], :) for col in 1:K for row in 1:col)
+end
+
+function convert_to_params(centers, ::SBM)
+    return [centers[i] for i in axes(centers, 2)]
+end
+
+function convert_to_params(centers, ::DecoratedSBM{D}) where {D}
+    return [D(centers[:, i]...) for i in axes(centers, 2)]
+end
+
+# specialization for DiscreteNonParametric as it requires support to be specified
+function convert_to_params(centers,
+        sbm::DecoratedSBM{DiscreteNonParametric{T, P, Ts, Ps}}) where {T, P, Ts, Ps}
+    s = support(sbm.θ[1, 1])
+    return [DiscreteNonParametric{T, P, Ts, Ps}(s, convert(Ps, centers[:, i]))
+            for i in axes(centers, 2)]
+end

@@ -83,13 +83,13 @@ sbm = SBM(θ, sizes)
 - [`SimpleContinuousGraphon`](@ref): Continuous graphon representation
 - [`empirical_graphon`](@ref): Convert continuous graphon to SBM
 """
-struct SBM{P, S, S2} <: AbstractGraphon{Bool, BitMatrix}
+struct SBM{P <: AbstractMatrix{<:Real}, S, S2} <: AbstractGraphon{Bool, BitMatrix}
     θ::P
     size::S
     cumsize::S2
 end
 
-function SBM(θ, sizes)
+function SBM(θ::AbstractMatrix{<:Real}, sizes)
     @argcheck all(x -> x <= 1 && x >= 0, θ)
     @argcheck all(sizes .> 0)
     cumsizes = cumsum(sizes)

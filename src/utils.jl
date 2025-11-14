@@ -35,6 +35,12 @@ end
             break
         end
     end
+    if index_1 == 0
+        index_1 = length(sbm.cumsize)
+    end
+    if index_2 == 0
+        index_2 = length(sbm.cumsize)
+    end
     return index_1, index_2
 end
 
@@ -45,6 +51,15 @@ function upper_triangular_to_full(v::AbstractVector{T}) where {T}
     return [i <= j ? v[j * (j - 1) ÷ 2 + i] : v[i * (i - 1) ÷ 2 + j] for i in 1:s, j in 1:s]
 end
 
+function node_labels_to_latents(
+        node_labels::AbstractVector{Int}, sbm::Union{SBM, DecoratedSBM, SSM})
+    return map(label -> _label_to_latent(label, sbm), node_labels)
+end
+
+function _label_to_latent(label::Int, sbm::Union{SBM, DecoratedSBM, SSM})
+    return sbm.cumsize[label] - eps()
+end
+
 ## Helper function to extract the k-th parameter from a distribution
 
 function _extract_param(d, k)
@@ -52,7 +67,7 @@ function _extract_param(d, k)
 end
 
 function _extract_param(d::DiscreteNonParametric, k)
-    return params(d)[2][k]
+    return probs(d)[k]
 end
 
 _extract_param(d) = _extract_param(d, :)
