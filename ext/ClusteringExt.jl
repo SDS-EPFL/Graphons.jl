@@ -26,7 +26,7 @@ function SSM(sbm::Union{SBM, DecoratedSBM}, num_shapes::Int,
 end
 
 function estimate_ssm(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range,
-        rng::AbstractRNG = Random.default_rng())
+        rng::AbstractRNG = Random.default_rng(), criterion_f = bic)
     if all(x -> x >= 1, latents)
         @debug "Converting node labels to latent positions."
         if any(x -> x > num_blocks(sbm), latents)
@@ -43,7 +43,7 @@ function estimate_ssm(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range,
     X = _extract_params_triu(sbm)
     for (i, num_shapes) in enumerate(shape_range)
         ssm = SSM(_ssm_params(X, num_shapes, sbm, rng)..., sbm.size, sbm.cumsize)
-        criterion_value = mdl(ssm, A, latents_checked)
+        criterion_value = criterion_f(ssm, A, latents_checked)
         criterion_values[i] = criterion_value
         if criterion_value < best_criterion_value
             best_criterion_value = criterion_value
