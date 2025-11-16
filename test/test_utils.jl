@@ -107,6 +107,7 @@ using Distributions
             # Uniform distribution (a, b)
             d = Uniform(0.0, 1.0)
             result = Graphons._extract_param(d, :)
+            @test Graphons._extract_param(d) == result
             @test result isa AbstractVector{<:AbstractFloat}
             @test result == [0.0, 1.0]
         end
