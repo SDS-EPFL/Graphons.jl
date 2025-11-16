@@ -22,6 +22,32 @@ using Distributions
         @test size(C) == (3, 3)
         @test eltype(C) == Float64
         @test nnz(C) == 0
+
+
+
+        @testset "custom matrix for slow fallback" begin
+            struct constantMatrix{T} <: AbstractMatrix{T}
+                val::T
+                size::Tuple{Int,Int}
+            end
+
+            function Base.size(A::constantMatrix)
+                return A.size
+            end
+
+            function Base.getindex(A::constantMatrix, i::Int, j::Int)
+                return A.val
+            end
+
+            function Base.setindex!(A::constantMatrix, v, i::Int, j::Int)
+                A.val = v
+            end
+
+            D = Graphons.make_empty_graph(constantMatrix{Float64}, 2)
+            @test size(D) == (2, 2)
+            @test all(D .== 0.0)
+        end
+
     end
 
     @testset "clear_graph!" begin
