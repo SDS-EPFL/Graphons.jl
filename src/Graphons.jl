@@ -5,8 +5,13 @@ using SparseArrays
 using StaticArrays
 import Base.rand
 using ArgCheck
-import Distributions: DiscreteMultivariateDistribution, UnivariateDistribution,
-                      MultivariateDistribution, DiscreteNonParametric, support, probs
+import Distributions:
+    DiscreteMultivariateDistribution,
+    UnivariateDistribution,
+    MultivariateDistribution,
+    DiscreteNonParametric,
+    support,
+    probs
 import StatsAPI: params
 using SpecialFunctions: gamma
 
@@ -46,7 +51,7 @@ All graphon types must:
 # See Also
 - [`rand`](@ref), [`sample_graph`](@ref): Sampling functions
 """
-abstract type AbstractGraphon{T, M} end
+abstract type AbstractGraphon{T,M} end
 
 """
     SimpleGraphon{M}
@@ -55,7 +60,7 @@ Type alias for graphons representing simple (unweighted) graphs with Boolean edg
 
 Equivalent to `AbstractGraphon{Bool,M}` where `M` is a matrix type storing Boolean values.
 """
-const SimpleGraphon{M} = AbstractGraphon{Bool, M} where {M <: AbstractArray{Bool}}
+const SimpleGraphon{M} = AbstractGraphon{Bool,M} where {M<:AbstractArray{Bool}}
 
 """
     WeightedGraphon{M}
@@ -64,13 +69,13 @@ Type alias for graphons representing weighted graphs with Float64 edges.
 
 Equivalent to `AbstractGraphon{Float64,M}` where `M` is a matrix type storing Float64 values.
 """
-const WeightedGraphon{M} = AbstractGraphon{Float64, M} where {M <: AbstractArray{Float64}}
+const WeightedGraphon{M} = AbstractGraphon{Float64,M} where {M<:AbstractArray{Float64}}
 
-function edge_type(::Type{<:AbstractGraphon{T, M}}) where {T, M}
+function edge_type(::Type{<:AbstractGraphon{T,M}}) where {T,M}
     return T
 end
 
-function matrix_type(::Type{<:AbstractGraphon{T, M}}) where {T, M}
+function matrix_type(::Type{<:AbstractGraphon{T,M}}) where {T,M}
     return M
 end
 
@@ -81,7 +86,7 @@ include("sampling.jl")
 include("simple_graphon.jl")
 include("decorated_graphon.jl")
 include("stochastic_shape_model.jl")
-include("utils.jl")
+include("utils/init.jl")
 
 export rand, sample_graph
 export SBM, SimpleContinuousGraphon, empirical_graphon
