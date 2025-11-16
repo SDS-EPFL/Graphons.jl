@@ -5,8 +5,13 @@ using SparseArrays
 using StaticArrays
 import Base.rand
 using ArgCheck
-import Distributions: DiscreteMultivariateDistribution, UnivariateDistribution,
-                      MultivariateDistribution, DiscreteNonParametric, support, probs
+import Distributions:
+                      DiscreteMultivariateDistribution,
+                      UnivariateDistribution,
+                      MultivariateDistribution,
+                      DiscreteNonParametric,
+                      support,
+                      probs
 import StatsAPI: params
 using SpecialFunctions: gamma
 
@@ -80,8 +85,11 @@ matrix_type(g::AbstractGraphon) = matrix_type(typeof(g))
 include("sampling.jl")
 include("simple_graphon.jl")
 include("decorated_graphon.jl")
+
+const BlockModel = Union{SBM, DecoratedSBM}
+
 include("stochastic_shape_model.jl")
-include("utils.jl")
+include("utils/init.jl")
 
 export rand, sample_graph
 export SBM, SimpleContinuousGraphon, empirical_graphon

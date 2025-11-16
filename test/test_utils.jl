@@ -18,10 +18,36 @@ using Distributions
         @test all(.!B)
 
         # Test sparse matrix creation
-        C = Graphons.make_empty_graph(SparseMatrixCSC{Float64, Int}, 3)
+        C = Graphons.make_empty_graph(SparseMatrixCSC{Float64,Int}, 3)
         @test size(C) == (3, 3)
         @test eltype(C) == Float64
         @test nnz(C) == 0
+
+
+
+        @testset "custom matrix for slow fallback" begin
+            struct constantMatrix{T} <: AbstractMatrix{T}
+                val::T
+                size::Tuple{Int,Int}
+            end
+
+            function Base.size(A::constantMatrix)
+                return A.size
+            end
+
+            function Base.getindex(A::constantMatrix, i::Int, j::Int)
+                return A.val
+            end
+
+            function Base.setindex!(A::constantMatrix, v, i::Int, j::Int)
+                A.val = v
+            end
+
+            D = Graphons.make_empty_graph(constantMatrix{Float64}, 2)
+            @test size(D) == (2, 2)
+            @test all(D .== 0.0)
+        end
+
     end
 
     @testset "clear_graph!" begin
@@ -43,9 +69,40 @@ using Distributions
         @test Graphons._convert_latent_to_block(sbm, 0.15) == 1
         @test Graphons._convert_latent_to_block(sbm, 0.45) == 2
         @test Graphons._convert_latent_to_block(sbm, 0.8) == 3
+        @test Graphons._convert_latent_to_block(sbm, 1.0) == 3
+        @test Graphons._convert_latent_to_block(sbm, 0.0) == 1
 
         @test Graphons._convert_latent_to_block(sbm, 0.15, 0.45) == (1, 2)
         @test Graphons._convert_latent_to_block(sbm, 0.5, 0.85) == (2, 3)
+    end
+
+
+    @testset "latents_manipulation" begin
+        size = [0.4, 0.6]
+        sbm = SBM([0.7 0.2; 0.2 0.9], size)
+        @assert Graphons._label_to_latent(1, sbm) == 0.4 - eps()
+        @assert Graphons._label_to_latent(2, sbm) == 1.0 - eps()
+        node_labels = [1, 2]
+        latents = Graphons.node_labels_to_latents(node_labels, sbm)
+        @assert latents == [0.4 - eps(), 1.0 - eps()]
+    end
+
+
+    @testset "block model permutation" begin
+        sizes = [0.3, 0.3, 0.4]
+        sbm = SBM([0.8 0.1 0.2; 0.1 0.9 0.1; 0.2 0.1 0.7], sizes)
+        sbm_ref = SBM([0.8 0.1 0.2; 0.1 0.9 0.1; 0.2 0.1 0.7], copy(sizes))
+        perm = [3, 1, 2]
+        invperm = [2, 3, 1]
+        Graphons.permute!(sbm, perm)
+        @test sbm.size == [0.4, 0.3, 0.3]
+        @test sbm.cumsize == [0.4, 0.7, 1.0]
+        @test sbm.θ == sbm_ref.θ[perm, perm]
+
+        Graphons.permute!(sbm, invperm)
+        @test sbm.size == sbm_ref.size
+        @test sbm.cumsize == sbm_ref.cumsize
+        @test sbm.θ == sbm_ref.θ
     end
 
     @testset "_extract_param" begin
@@ -78,6 +135,7 @@ using Distributions
             # Uniform distribution (a, b)
             d = Uniform(0.0, 1.0)
             result = Graphons._extract_param(d, :)
+            @test Graphons._extract_param(d) == result
             @test result isa AbstractVector{<:AbstractFloat}
             @test result == [0.0, 1.0]
         end
