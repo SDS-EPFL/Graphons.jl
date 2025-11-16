@@ -112,6 +112,7 @@ using Clustering
 
         # Values should be close (kmeans may not match exactly)
         for i in 1:3, j in 1:3
+
             @test abs(sbm2.θ[i, j] - sbm.θ[i, j]) < 0.5
         end
     end

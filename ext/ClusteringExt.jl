@@ -7,14 +7,23 @@ using Random
 using SpecialFunctions: gamma, loggamma
 import Distributions: support, DiscreteNonParametric, params, logpdf
 
-import Graphons: SSM, upper_triangular_to_full, matrix_type, _extract_param,
-                 _convert_latent_to_block, SimpleGraphon, AbstractGraphon, estimate_ssm,
-                 _extract_params_triu, convert_to_params, node_labels_to_latents
+import Graphons:
+                 SSM,
+                 upper_triangular_to_full,
+                 matrix_type,
+                 _extract_param,
+                 _convert_latent_to_block,
+                 SimpleGraphon,
+                 AbstractGraphon,
+                 estimate_ssm,
+                 _extract_params_triu,
+                 convert_to_params,
+                 node_labels_to_latents,
+                 BlockModel
 
 export SSM, estimate_ssm
 
-function SSM(sbm::Union{SBM, DecoratedSBM}, num_shapes::Int,
-        rng::AbstractRNG = Random.default_rng())
+function SSM(sbm::BlockModel, num_shapes::Int, rng::AbstractRNG = Random.default_rng())
     @argcheck num_shapes>0 "Number of shapes must be positive."
     K = length(sbm.size)
     @assert num_shapes<K * (K + 1) / 2 "Number of shapes must be less than number of unique block pairs."
@@ -25,8 +34,14 @@ function SSM(sbm::Union{SBM, DecoratedSBM}, num_shapes::Int,
     return Graphons.SSM(θ, block_pair_to_shape, sbm.size, sbm.cumsize, matrix_type(sbm))
 end
 
-function estimate_ssm(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range,
-        rng::AbstractRNG = Random.default_rng(), criterion_f = bic)
+function estimate_ssm(
+        sbm::BlockModel,
+        A,
+        latents,
+        shape_range,
+        rng::AbstractRNG = Random.default_rng(),
+        criterion_f = bic
+)
     if all(x -> x >= 1, latents)
         @debug "Converting node labels to latent positions."
         if any(x -> x > num_blocks(sbm), latents)
@@ -53,8 +68,13 @@ function estimate_ssm(sbm::Union{SBM, DecoratedSBM}, A, latents, shape_range,
     return best_ssm, criterion_values
 end
 
-function SSM(sbm::Union{SBM, DecoratedSBM}, A, latents,
-        shape_range, rng::AbstractRNG = Random.default_rng())
+function SSM(
+        sbm::BlockModel,
+        A,
+        latents,
+        shape_range,
+        rng::AbstractRNG = Random.default_rng()
+)
     first(estimate_ssm(sbm, A, latents, shape_range, rng))
 end
 
@@ -68,12 +88,12 @@ logprob(model::AbstractGraphon, A, ξ_i, ξ_j) = logpdf(model(ξ_i, ξ_j), A)
 num_params_per_shape(::SimpleGraphon) = 1
 num_params_per_shape(model::AbstractGraphon) = length(_extract_param(first(model.θ)))
 
-function num_shapes(model::Union{SBM, DecoratedSBM})
+function num_shapes(model::BlockModel)
     num_blocks = size(model.θ, 1)
     return num_blocks * (num_blocks + 1) ÷ 2
 end
 num_shapes(model::Graphons.SSM) = length(model.θ)
-num_blocks(model::Union{SBM, DecoratedSBM}) = size(model.θ, 1)
+num_blocks(model::BlockModel) = size(model.θ, 1)
 num_blocks(model::Graphons.SSM) = length(model.size)
 
 function _ll(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
