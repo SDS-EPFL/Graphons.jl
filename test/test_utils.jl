@@ -69,6 +69,8 @@ using Distributions
         @test Graphons._convert_latent_to_block(sbm, 0.15) == 1
         @test Graphons._convert_latent_to_block(sbm, 0.45) == 2
         @test Graphons._convert_latent_to_block(sbm, 0.8) == 3
+        @test Graphons._convert_latent_to_block(sbm, 1.0) == 3
+        @test Graphons._convert_latent_to_block(sbm, 0.0) == 1
 
         @test Graphons._convert_latent_to_block(sbm, 0.15, 0.45) == (1, 2)
         @test Graphons._convert_latent_to_block(sbm, 0.5, 0.85) == (2, 3)

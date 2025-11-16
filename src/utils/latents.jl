@@ -1,7 +1,7 @@
 ## Mapping continuous latents to discrete block labels and vice versa
 
 function _convert_latent_to_block(sbm, ξ)
-    return searchsortedfirst(sbm.cumsize, ξ)
+    return min(searchsortedfirst(sbm.cumsize, ξ), length(sbm.size))
 end
 
 @inline function _convert_latent_to_block(sbm, ξ1, ξ2)
@@ -9,13 +9,13 @@ end
 end
 
 function node_labels_to_latents(
-        node_labels::AbstractVector{Int},
-        sbm::Union{SBM, DecoratedSBM, SSM}
+    node_labels::AbstractVector{Int},
+    sbm::Union{SBM,DecoratedSBM,SSM},
 )
     return map(label -> _label_to_latent(label, sbm), node_labels)
 end
 
-function _label_to_latent(label::Int, sbm::Union{SBM, DecoratedSBM, SSM})
+function _label_to_latent(label::Int, sbm::Union{SBM,DecoratedSBM,SSM})
     return sbm.cumsize[label] - eps()
 end
 
