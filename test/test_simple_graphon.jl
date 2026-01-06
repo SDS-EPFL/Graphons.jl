@@ -14,13 +14,13 @@ using Test
         @test g(0.0, 1.0) ≈ 0.0
 
         # Test with custom matrix type
-        h = SimpleContinuousGraphon((x, y) -> 0.3, SparseMatrixCSC{Bool, Int})
+        h = SimpleContinuousGraphon((x, y) -> 0.3, SparseMatrixCSC{Bool,Int})
         @test h(0.1, 0.2) == 0.3
     end
 
-    @testset "empirical_graphon from continuous" begin
+    @testset "discretized_graphon from continuous" begin
         f = SimpleContinuousGraphon((x, y) -> x * y)
-        sbm = empirical_graphon(f, 3)
+        sbm = discretized_graphon(f, 3)
 
         @test sbm isa SBM
         @test size(sbm.θ) == (3, 3)

@@ -209,12 +209,12 @@ fig
 
 # ## From Continuous Graphons to Block Models
 #
-# We can discretize any continuous graphon into an SBM using `empirical_graphon`:
+# We can discretize any continuous graphon into an SBM using `discretized_graphon`:
 
 W_smooth(x, y) = x * y
 graphon_smooth = SimpleContinuousGraphon(W_smooth)
 
-sbm_from_graphon = empirical_graphon(graphon_smooth, 5)  # 5 blocks
+sbm_from_graphon = discretized_graphon(graphon_smooth, 5)  # 5 blocks
 
 fig = Figure(size = (800, 350))
 ax1 = Axis(fig[1, 1],
@@ -264,7 +264,7 @@ fig
 # - **Assortative SBMs** create community structure (high within-block, low between-block)
 # - **Disassortative SBMs** create core-periphery or other mixing patterns
 # - Block sizes can be unequal to model realistic heterogeneity
-# - Any continuous graphon can be discretized with `empirical_graphon(graphon, k)`
+# - Any continuous graphon can be discretized with `discretized_graphon(graphon, k)`
 # - SBMs are computationally efficient for large networks
 #
 # ## Next Steps

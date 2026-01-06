@@ -57,7 +57,7 @@ The package exports:
 
 - **Types**: `SimpleContinuousGraphon`, `SBM`, `DecoratedGraphon`,
   `DecoratedSBM`
-- **Functions**: `rand`, `sample_graph`, `empirical_graphon`
+- **Functions**: `rand`, `sample_graph`, `discretized_graphon`
 
 See the [API Reference](@ref) for detailed documentation.
 

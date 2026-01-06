@@ -163,7 +163,7 @@ Use `@argcheck` from ArgCheck.jl for constructor validation:
 
 ### Empirical Graphon Discretization
 
-`empirical_graphon(f, k)` discretizes continuous graphons:
+`discretized_graphon(f, k)` discretizes continuous graphons:
 
 - Creates uniform grid of `k` points
 - **Important**: Uses `sizes[end] += 1 - sum(sizes)` to ensure exact sum=1

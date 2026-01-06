@@ -8,20 +8,21 @@ using SpecialFunctions: gamma, loggamma
 import Distributions: support, DiscreteNonParametric, params, logpdf
 
 import Graphons:
-                 SSM,
-                 upper_triangular_to_full,
-                 matrix_type,
-                 _extract_param,
-                 _convert_latent_to_block,
-                 SimpleGraphon,
-                 AbstractGraphon,
-                 estimate_ssm,
-                 _extract_params_triu,
-                 convert_to_params,
-                 node_labels_to_latents,
-                 BlockModel
+    SSM,
+    upper_triangular_to_full,
+    matrix_type,
+    _extract_param,
+    _convert_latent_to_block,
+    SimpleGraphon,
+    AbstractGraphon,
+    estimate_ssm,
+    _extract_params_triu,
+    convert_to_params,
+    node_labels_to_latents,
+    BlockModel,
+    num_blocks
 
-export SSM, estimate_ssm
+export SSM, estimate_ssm, num_blocks
 
 function SSM(sbm::BlockModel, num_shapes::Int, rng::AbstractRNG = Random.default_rng())
     @argcheck num_shapes>0 "Number of shapes must be positive."
@@ -35,12 +36,12 @@ function SSM(sbm::BlockModel, num_shapes::Int, rng::AbstractRNG = Random.default
 end
 
 function estimate_ssm(
-        sbm::BlockModel,
-        A,
-        latents,
-        shape_range,
-        rng::AbstractRNG = Random.default_rng(),
-        criterion_f = bic
+    sbm::BlockModel,
+    A,
+    latents,
+    shape_range,
+    rng::AbstractRNG = Random.default_rng(),
+    criterion_f = bic,
 )
     if all(x -> x >= 1, latents)
         @debug "Converting node labels to latent positions."
@@ -69,11 +70,11 @@ function estimate_ssm(
 end
 
 function SSM(
-        sbm::BlockModel,
-        A,
-        latents,
-        shape_range,
-        rng::AbstractRNG = Random.default_rng()
+    sbm::BlockModel,
+    A,
+    latents,
+    shape_range,
+    rng::AbstractRNG = Random.default_rng(),
 )
     first(estimate_ssm(sbm, A, latents, shape_range, rng))
 end
@@ -93,10 +94,9 @@ function num_shapes(model::BlockModel)
     return num_blocks * (num_blocks + 1) ÷ 2
 end
 num_shapes(model::Graphons.SSM) = length(model.θ)
-num_blocks(model::BlockModel) = size(model.θ, 1)
 num_blocks(model::Graphons.SSM) = length(model.size)
 
-function _ll(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
+function _ll(model::Union{SBM,DecoratedSBM,SSM}, A, latents)
     ll = 0.0
     @inbounds for j in eachindex(latents)
         for i in eachindex(latents)
@@ -108,13 +108,13 @@ function _ll(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
     return ll
 end
 
-function bic(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
+function bic(model::Union{SBM,DecoratedSBM,SSM}, A, latents)
     ll = _ll(model, A, latents)
     n = size(A, 1)
     return -2 * ll + num_params_per_shape(model) * num_shapes(model) * log(n * (n - 1) / 2)
 end
 
-function mdl(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
+function mdl(model::Union{SBM,DecoratedSBM,SSM}, A, latents)
     ll = _ll(model, A, latents)
     if !isfinite(ll)
         @warn "Log-likelihood is not finite"
@@ -123,8 +123,9 @@ function mdl(model::Union{SBM, DecoratedSBM, SSM}, A, latents)
     n_edges = n_nodes * (n_nodes - 1) ÷ 2
     s = num_shapes(model)
     k = num_blocks(model)
-    partition_cost = log_binomial(n_nodes - 1, k - 1) + loggamma(n_nodes + 1) -
-                     sum(loggamma(ceil(Int, c * n_nodes) + 1) for c in model.size)
+    partition_cost =
+        log_binomial(n_nodes - 1, k - 1) + loggamma(n_nodes + 1) -
+        sum(loggamma(ceil(Int, c * n_nodes) + 1) for c in model.size)
     edge_agg_cost = log_binomial(s + n_edges - 1, n_edges)
     # parameters
     return -ll + partition_cost + edge_agg_cost
