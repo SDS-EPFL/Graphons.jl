@@ -20,26 +20,25 @@ labels = [
     &quot;Category 0\n(No edges)&quot;,
     &quot;Category 1\n(Layer 1 only)&quot;,
     &quot;Category 2\n(Layer 2 only)&quot;,
-    &quot;Category 3\n(Both layers)&quot;
+    &quot;Category 3\n(Both layers)&quot;,
 ]
 
-for i in 1:4
+for i = 1:4
     row = (i - 1) ÷ 2 + 1
     col = (i - 1) % 2 + 1
 
-    ax = Axis(fig[row, col],
+    ax = Axis(
+        fig[row, col],
         title = labels[i],
         xlabel = &quot;Position x&quot;,
         ylabel = &quot;Position y&quot;,
-        aspect = 1)
+        aspect = 1,
+    )
 
-    hm = heatmap!(ax, graphon_multiplex, k = i,
-        colormap = :binary,
-        colorrange = (0, 1))
+    hm = heatmap!(ax, graphon_multiplex, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[:, 3], colormap = :binary, colorrange = (0, 1),
-    label = &quot;Probability&quot;)
+Colorbar(fig[:, 3], colormap = :binary, colorrange = (0, 1), label = &quot;Probability&quot;)
 
 fig</code></pre><img src="d223295e.png" alt="Example block output"/><p><strong>Interpretation</strong>:</p><ul><li><strong>Top-left</strong>: Most pairs have no edges (high p₀₀)</li><li><strong>Top-right</strong>: Layer 1 edges increase with distance (p₁₀)</li><li><strong>Bottom-left</strong>: Layer 2 has periodic structure (p₀₁)</li><li><strong>Bottom-right</strong>: Both layers appear for similar, high-position nodes (p₁₁)</li></ul><h2 id="Sampling-a-Multiplex-Network"><a class="docs-heading-anchor" href="#Sampling-a-Multiplex-Network">Sampling a Multiplex Network</a><a id="Sampling-a-Multiplex-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Sampling-a-Multiplex-Network" title="Permalink"></a></h2><p>Now let&#39;s sample an actual network with 300 nodes:</p><pre><code class="language-julia hljs">n = 300
 A_categories = sample_graph(graphon_multiplex, n)
@@ -54,9 +53,11 @@ for (idx, (cat, label)) in enumerate(zip(0:3, labels))
     row = (idx - 1) ÷ 2 + 1
     col = (idx - 1) % 2 + 1
 
-    ax = Axis(fig[row, col],
+    ax = Axis(
+        fig[row, col],
         title = label * &quot; (n=$(count(==(cat), A_categories)))&quot;,
-        aspect = 1)
+        aspect = 1,
+    )
     hidedecorations!(ax)
 
     A_binary = zeros(Bool, n, n)
@@ -77,12 +78,8 @@ println(&quot;Overlap (both layers): &quot;, sum(A_layer1 .&amp; A_layer2) / (n^
 Layer 2 density: 28.728888888888886%
 Overlap (both layers): 8.188888888888888%</code></pre><p>Visualize the two layers:</p><pre><code class="language-julia hljs">fig = Figure(size = (900, 400))
 
-ax1 = Axis(fig[1, 1],
-    title = &quot;Layer 1 (Distance-based)&quot;,
-    aspect = 1)
-ax2 = Axis(fig[1, 2],
-    title = &quot;Layer 2 (Periodic)&quot;,
-    aspect = 1)
+ax1 = Axis(fig[1, 1], title = &quot;Layer 1 (Distance-based)&quot;, aspect = 1)
+ax2 = Axis(fig[1, 2], title = &quot;Layer 2 (Periodic)&quot;, aspect = 1)
 
 hidedecorations!(ax1)
 hidedecorations!(ax2)
@@ -114,30 +111,36 @@ corr = [correlation_matrix(graphon_mvb(x, y))[1, 2] for x in x_range, y in x_ran
 
 fig = Figure(size = (900, 350))
 
-ax1 = Axis(fig[1, 1],
-    title = &quot;P(Layer 1 edge)&quot;,
-    aspect = 1)
-ax2 = Axis(fig[1, 2],
-    title = &quot;P(Layer 2 edge)&quot;,
-    aspect = 1)
-ax3 = Axis(fig[1, 3],
-    title = &quot;Correlation&quot;,
-    aspect = 1)
+ax1 = Axis(fig[1, 1], title = &quot;P(Layer 1 edge)&quot;, aspect = 1)
+ax2 = Axis(fig[1, 2], title = &quot;P(Layer 2 edge)&quot;, aspect = 1)
+ax3 = Axis(fig[1, 3], title = &quot;Correlation&quot;, aspect = 1)
 hidedecorations!.([ax1, ax2, ax3])
 hm1 = heatmap!(ax1, p1, colormap = :binary, colorrange = (0, 1))
 hm2 = heatmap!(ax2, p2, colormap = :binary, colorrange = (0, 1))
 hm3 = heatmap!(ax3, corr, colormap = :RdBu, colorrange = (-1, 1))
 
-Colorbar(fig[2, 1:2], hm1, vertical = false,
-    label = &quot;Probability&quot;, width = Relative(0.6), flipaxis = false)
-Colorbar(fig[2, 3], hm3, vertical = false,
-    label = &quot;Correlation&quot;, width = Relative(0.9), flipaxis = false)
+Colorbar(
+    fig[2, 1:2],
+    hm1,
+    vertical = false,
+    label = &quot;Probability&quot;,
+    width = Relative(0.6),
+    flipaxis = false,
+)
+Colorbar(
+    fig[2, 3],
+    hm3,
+    vertical = false,
+    label = &quot;Correlation&quot;,
+    width = Relative(0.9),
+    flipaxis = false,
+)
 
-fig</code></pre><img src="91ed31e1.png" alt="Example block output"/><p><strong>Interpretation</strong>:</p><ul><li><strong>Left</strong>: Layer 1 has higher density in the top-right (high positions)</li><li><strong>Middle</strong>: Layer 2 has periodic structure with multiple dense regions</li><li><strong>Right</strong>: Positive correlation (red) where both layers are active, negative correlation (blue) where they anti-correlate</li></ul><h2 id="Creating-Block-Models-for-Multiplex-Networks"><a class="docs-heading-anchor" href="#Creating-Block-Models-for-Multiplex-Networks">Creating Block Models for Multiplex Networks</a><a id="Creating-Block-Models-for-Multiplex-Networks-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-Block-Models-for-Multiplex-Networks" title="Permalink"></a></h2><p>Just like simple graphons, we can discretize decorated graphons into block models for computational efficiency:</p><pre><code class="language-julia hljs">sbm_multiplex = empirical_graphon(graphon_mvb, 10)
+fig</code></pre><img src="91ed31e1.png" alt="Example block output"/><p><strong>Interpretation</strong>:</p><ul><li><strong>Left</strong>: Layer 1 has higher density in the top-right (high positions)</li><li><strong>Middle</strong>: Layer 2 has periodic structure with multiple dense regions</li><li><strong>Right</strong>: Positive correlation (red) where both layers are active, negative correlation (blue) where they anti-correlate</li></ul><h2 id="Creating-Block-Models-for-Multiplex-Networks"><a class="docs-heading-anchor" href="#Creating-Block-Models-for-Multiplex-Networks">Creating Block Models for Multiplex Networks</a><a id="Creating-Block-Models-for-Multiplex-Networks-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-Block-Models-for-Multiplex-Networks" title="Permalink"></a></h2><p>Just like simple graphons, we can discretize decorated graphons into block models for computational efficiency:</p><pre><code class="language-julia hljs">sbm_multiplex = discretized_graphon(graphon_mvb, 10)
 
 println(&quot;Block model type: &quot;, typeof(sbm_multiplex))
 println(&quot;Number of blocks: &quot;, length(sbm_multiplex.size))
 
 # Sample from the block model:
 A_sbm = sample_graph(sbm_multiplex, 200);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Block model type: DecoratedSBM{MVBernoulli.MultivariateBernoulli{Float64}, Matrix{StaticArraysCore.SizedVector{2, Bool, TData} where TData&lt;:AbstractVector{Bool}}, Matrix{MVBernoulli.MultivariateBernoulli{Float64}}, Vector{Float64}, Vector{Float64}}
-Number of blocks: 10</code></pre><h2 id="Key-Takeaways"><a class="docs-heading-anchor" href="#Key-Takeaways">Key Takeaways</a><a id="Key-Takeaways-1"></a><a class="docs-heading-anchor-permalink" href="#Key-Takeaways" title="Permalink"></a></h2><ul><li><strong>Decorated graphons</strong> return distributions instead of probabilities</li><li><strong>Multiplex networks</strong> can be modeled with discrete distributions over edge categories</li><li>Category probabilities can encode complex layer interactions</li><li>We can analyze marginal probabilities and correlations between layers</li><li>All the same tools work: <code>rand</code>, <code>sample_graph</code>, <code>empirical_graphon</code></li><li>The <code>MVBernoulli</code> package helps analyze correlations in binary multiplex networks</li></ul><h2 id="Extensions"><a class="docs-heading-anchor" href="#Extensions">Extensions</a><a id="Extensions-1"></a><a class="docs-heading-anchor-permalink" href="#Extensions" title="Permalink"></a></h2><p>Decorated graphons can model many other structures:</p><ul><li><strong>Weighted networks</strong>: Use continuous distributions (Normal, Exponential, etc.)</li><li><strong>Signed networks</strong>: Positive and negative edges with distributions</li><li><strong>Temporal networks</strong>: Edge timing distributions</li><li><strong>Attributed graphs</strong>: Node or edge features from distributions</li></ul><p>The flexibility of decorated graphons makes them a powerful tool for complex network modeling!</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../02_block_models/">« Stochastic Block Models</a><a class="docs-footer-nextpage" href="../05_stochastic_shape_models/">Stochastic Shape Models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Sunday 16 November 2025 13:52">Sunday 16 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Number of blocks: 10</code></pre><h2 id="Key-Takeaways"><a class="docs-heading-anchor" href="#Key-Takeaways">Key Takeaways</a><a id="Key-Takeaways-1"></a><a class="docs-heading-anchor-permalink" href="#Key-Takeaways" title="Permalink"></a></h2><ul><li><strong>Decorated graphons</strong> return distributions instead of probabilities</li><li><strong>Multiplex networks</strong> can be modeled with discrete distributions over edge categories</li><li>Category probabilities can encode complex layer interactions</li><li>We can analyze marginal probabilities and correlations between layers</li><li>All the same tools work: <code>rand</code>, <code>sample_graph</code>, <code>discretized_graphon</code></li><li>The <code>MVBernoulli</code> package helps analyze correlations in binary multiplex networks</li></ul><h2 id="Extensions"><a class="docs-heading-anchor" href="#Extensions">Extensions</a><a id="Extensions-1"></a><a class="docs-heading-anchor-permalink" href="#Extensions" title="Permalink"></a></h2><p>Decorated graphons can model many other structures:</p><ul><li><strong>Weighted networks</strong>: Use continuous distributions (Normal, Exponential, etc.)</li><li><strong>Signed networks</strong>: Positive and negative edges with distributions</li><li><strong>Temporal networks</strong>: Edge timing distributions</li><li><strong>Attributed graphs</strong>: Node or edge features from distributions</li></ul><p>The flexibility of decorated graphons makes them a powerful tool for complex network modeling!</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../02_block_models/">« Stochastic Block Models</a><a class="docs-footer-nextpage" href="../05_stochastic_shape_models/">Stochastic Shape Models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Tuesday 6 January 2026 12:49">Tuesday 6 January 2026</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

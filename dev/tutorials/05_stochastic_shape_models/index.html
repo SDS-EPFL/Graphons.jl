@@ -7,12 +7,16 @@ using Random
 using CairoMakie
 using Distributions
 
-Random.seed!(42)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">TaskLocalRNG()</code></pre><h2 id="Example-1:-Simple-Bipartite-Structure"><a class="docs-heading-anchor" href="#Example-1:-Simple-Bipartite-Structure">Example 1: Simple Bipartite Structure</a><a id="Example-1:-Simple-Bipartite-Structure-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1:-Simple-Bipartite-Structure" title="Permalink"></a></h2><p>Let&#39;s start with a simple example: a network with 3 blocks where we want:</p><ul><li>High connectivity within blocks (assortative)</li><li>Low connectivity between blocks (sparse)</li></ul><p>Using only <strong>2 shapes</strong> instead of 9 SBM parameters:</p><p>Define the shapes:</p><pre><code class="language-julia hljs">θ = [0.8,  # Shape 1: high probability (within-block)
-    0.1]  # Shape 2: low probability (between-block)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+Random.seed!(42)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">TaskLocalRNG()</code></pre><h2 id="Example-1:-Simple-Bipartite-Structure"><a class="docs-heading-anchor" href="#Example-1:-Simple-Bipartite-Structure">Example 1: Simple Bipartite Structure</a><a id="Example-1:-Simple-Bipartite-Structure-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1:-Simple-Bipartite-Structure" title="Permalink"></a></h2><p>Let&#39;s start with a simple example: a network with 3 blocks where we want:</p><ul><li>High connectivity within blocks (assortative)</li><li>Low connectivity between blocks (sparse)</li></ul><p>Using only <strong>2 shapes</strong> instead of 9 SBM parameters:</p><p>Define the shapes:</p><pre><code class="language-julia hljs">θ = [
+    0.8,  # Shape 1: high probability (within-block)
+    0.1,
+]  # Shape 2: low probability (between-block)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
  0.8
- 0.1</code></pre><p>Assign shapes to block pairs:</p><pre><code class="language-julia hljs">block_pair_to_shape = [1 2 2;   # Block 1: high within, low to others
-                       2 1 2;   # Block 2: high within, low to others
-                       2 2 1]   # Block 3: high within, low to others</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×3 Matrix{Int64}:
+ 0.1</code></pre><p>Assign shapes to block pairs:</p><pre><code class="language-julia hljs">block_pair_to_shape = [
+    1 2 2;   # Block 1: high within, low to others
+    2 1 2;   # Block 2: high within, low to others
+    2 2 1
+]   # Block 3: high within, low to others</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×3 Matrix{Int64}:
  1  2  2
  2  1  2
  2  2  1</code></pre><p>Block sizes:</p><pre><code class="language-julia hljs">sizes = [0.3, 0.4, 0.3]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Float64}:
@@ -20,58 +24,66 @@ Random.seed!(42)</code></pre><pre class="documenter-example-output"><code class=
  0.4
  0.3</code></pre><p>Create the SSM:</p><pre><code class="language-julia hljs">ssm_simple = SSM(θ, block_pair_to_shape, sizes, cumsum(sizes))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Bool, BitMatrix, Vector{Float64}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}([0.8, 0.1], [1 2 2; 2 1 2; 2 2 1], [0.3, 0.4, 0.3], [0.3, 0.7, 1.0])</code></pre><p>Let&#39;s visualize both the shape assignment and a sampled graph:</p><pre><code class="language-julia hljs">fig = Figure(size = (900, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = &quot;Shape Assignment Matrix\n(which shape for each block pair)&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = &quot;Equivalent Block Probability Matrix\n(θ values)&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = &quot;Sampled Graph (n=200)&quot;,
-    aspect = 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Axis with 0 plots:
+ax3 = Axis(fig[1, 3], title = &quot;Sampled Graph (n=200)&quot;, aspect = 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Axis with 0 plots:
 </code></pre><p>Visualize shape assignments</p><pre><code class="language-julia hljs">heatmap!(ax1, block_pair_to_shape)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Makie.Heatmap{Tuple{Makie.EndPoints{Float32}, Makie.EndPoints{Float32}, Matrix{Float32}}}</code></pre><p>Visualize the equivalent probability matrix using direct plotting</p><pre><code class="language-julia hljs">hm = heatmap!(ax2, ssm_simple, colormap = :binary, colorrange = (0, 1))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Makie.Heatmap{Tuple{StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}, Matrix{Float64}}}</code></pre><p>Sample and visualize graph</p><pre><code class="language-julia hljs">hidedecorations!(ax3)
 A_simple = sample_graph(ssm_simple, 200)
 heatmap!(ax3, A_simple, colormap = :binary)
 
 Colorbar(fig[1, 4], hm, label = &quot;Edge probability&quot;)
 
-fig</code></pre><img src="1c425a44.png" alt="Example block output"/><p><strong>Key observation</strong>: We achieved the same result as a 3-block SBM but using only 2 parameters instead of 9! The shape assignment matrix shows that diagonal blocks use shape 1 (high connectivity) while off-diagonal use shape 2 (low connectivity).</p><h2 id="Example-2:-Hierarchical-Core-Periphery"><a class="docs-heading-anchor" href="#Example-2:-Hierarchical-Core-Periphery">Example 2: Hierarchical Core-Periphery</a><a id="Example-2:-Hierarchical-Core-Periphery-1"></a><a class="docs-heading-anchor-permalink" href="#Example-2:-Hierarchical-Core-Periphery" title="Permalink"></a></h2><p>SSMs excel at modeling hierarchical structures. Let&#39;s create a 6-block network with:</p><ul><li>A core of 2 blocks (densely connected)</li><li>A periphery of 4 blocks (sparsely connected)</li><li>Medium connectivity between core and periphery</li></ul><p>We&#39;ll use only <strong>3 shapes</strong>:</p><pre><code class="language-julia hljs">θ_hier = [0.9,  # Shape 1: dense (core-core)
+fig</code></pre><img src="1c425a44.png" alt="Example block output"/><p><strong>Key observation</strong>: We achieved the same result as a 3-block SBM but using only 2 parameters instead of 9! The shape assignment matrix shows that diagonal blocks use shape 1 (high connectivity) while off-diagonal use shape 2 (low connectivity).</p><h2 id="Example-2:-Hierarchical-Core-Periphery"><a class="docs-heading-anchor" href="#Example-2:-Hierarchical-Core-Periphery">Example 2: Hierarchical Core-Periphery</a><a id="Example-2:-Hierarchical-Core-Periphery-1"></a><a class="docs-heading-anchor-permalink" href="#Example-2:-Hierarchical-Core-Periphery" title="Permalink"></a></h2><p>SSMs excel at modeling hierarchical structures. Let&#39;s create a 6-block network with:</p><ul><li>A core of 2 blocks (densely connected)</li><li>A periphery of 4 blocks (sparsely connected)</li><li>Medium connectivity between core and periphery</li></ul><p>We&#39;ll use only <strong>3 shapes</strong>:</p><pre><code class="language-julia hljs">θ_hier = [
+    0.9,  # Shape 1: dense (core-core)
     0.5,  # Shape 2: medium (core-periphery)
-    0.1]  # Shape 3: sparse (periphery-periphery)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Float64}:
+    0.1,
+]  # Shape 3: sparse (periphery-periphery)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Float64}:
  0.9
  0.5
- 0.1</code></pre><p>Create the shape assignment matrix for hierarchical structure:</p><pre><code class="language-julia hljs">block_pair_to_shape_hier = [1 1 2 2 2 2;   # Core block 1
-                            1 1 2 2 2 2;   # Core block 2
-                            2 2 3 3 3 3;   # Periphery block 1
-                            2 2 3 3 3 3;   # Periphery block 2
-                            2 2 3 3 3 3;   # Periphery block 3
-                            2 2 3 3 3 3]
+ 0.1</code></pre><p>Create the shape assignment matrix for hierarchical structure:</p><pre><code class="language-julia hljs">block_pair_to_shape_hier = [
+    1 1 2 2 2 2;   # Core block 1
+    1 1 2 2 2 2;   # Core block 2
+    2 2 3 3 3 3;   # Periphery block 1
+    2 2 3 3 3 3;   # Periphery block 2
+    2 2 3 3 3 3;   # Periphery block 3
+    2 2 3 3 3 3
+]
 
 sizes_hier = [0.15, 0.15, 0.175, 0.175, 0.175, 0.175]  # Core smaller than periphery
 
 ssm_hier = SSM(θ_hier, block_pair_to_shape_hier, sizes_hier, cumsum(sizes_hier))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Bool, BitMatrix, Vector{Float64}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}([0.9, 0.5, 0.1], [1 1 … 2 2; 1 1 … 2 2; … ; 2 2 … 3 3; 2 2 … 3 3], [0.15, 0.15, 0.175, 0.175, 0.175, 0.175], [0.15, 0.3, 0.475, 0.6499999999999999, 0.825, 0.9999999999999999])</code></pre><p>Visualize the hierarchical structure:</p><pre><code class="language-julia hljs">fig = Figure(size = (1100, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = &quot;Shape Assignment Matrix\n(6 blocks, 3 shapes)&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = &quot;Equivalent 6×6 Probability Matrix&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = &quot;Sampled Graph (n=300)&quot;,
-    aspect = 1)
+ax3 = Axis(fig[1, 3], title = &quot;Sampled Graph (n=300)&quot;, aspect = 1)
 
 heatmap!(ax1, block_pair_to_shape_hier, colormap = :tab10, colorrange = (1, 3))
 
@@ -83,36 +95,42 @@ heatmap!(ax3, A_hier, colormap = :binary)
 
 Colorbar(fig[1, 4], hm, label = &quot;Edge probability&quot;)
 
-fig</code></pre><img src="9a157568.png" alt="Example block output"/><p><strong>Key advantage</strong>: This 6-block hierarchical model uses only 3 parameters instead of 36! The clear two-level hierarchy (dense core in top-left, sparse periphery in bottom-right) is efficiently captured by shape sharing.</p><h2 id="Example-3:-Modular-Networks-with-Weak-Ties"><a class="docs-heading-anchor" href="#Example-3:-Modular-Networks-with-Weak-Ties">Example 3: Modular Networks with Weak Ties</a><a id="Example-3:-Modular-Networks-with-Weak-Ties-1"></a><a class="docs-heading-anchor-permalink" href="#Example-3:-Modular-Networks-with-Weak-Ties" title="Permalink"></a></h2><p>Real networks often have multiple dense communities connected by sparse &quot;weak ties&quot;. Let&#39;s model a 4-community network where:</p><ul><li>Communities 1-2 form one meta-module</li><li>Communities 3-4 form another meta-module</li><li>Within-module connections are stronger than between-module</li></ul><p>Using <strong>4 shapes</strong>:</p><pre><code class="language-julia hljs">θ_modular = [0.9,  # Shape 1: within-community
+fig</code></pre><img src="9a157568.png" alt="Example block output"/><p><strong>Key advantage</strong>: This 6-block hierarchical model uses only 3 parameters instead of 36! The clear two-level hierarchy (dense core in top-left, sparse periphery in bottom-right) is efficiently captured by shape sharing.</p><h2 id="Example-3:-Modular-Networks-with-Weak-Ties"><a class="docs-heading-anchor" href="#Example-3:-Modular-Networks-with-Weak-Ties">Example 3: Modular Networks with Weak Ties</a><a id="Example-3:-Modular-Networks-with-Weak-Ties-1"></a><a class="docs-heading-anchor-permalink" href="#Example-3:-Modular-Networks-with-Weak-Ties" title="Permalink"></a></h2><p>Real networks often have multiple dense communities connected by sparse &quot;weak ties&quot;. Let&#39;s model a 4-community network where:</p><ul><li>Communities 1-2 form one meta-module</li><li>Communities 3-4 form another meta-module</li><li>Within-module connections are stronger than between-module</li></ul><p>Using <strong>4 shapes</strong>:</p><pre><code class="language-julia hljs">θ_modular = [
+    0.9,  # Shape 1: within-community
     0.6,  # Shape 2: within-module, between-community
     0.2,  # Shape 3: between-module
-    0.05] # Shape 4: no connection (rare edges)
+    0.05,
+] # Shape 4: no connection (rare edges)
 
-block_pair_to_shape_modular = [1 2 3 4;   # Community 1
-                               2 1 4 3;   # Community 2
-                               3 4 1 2;   # Community 3
-                               4 3 2 1]
+block_pair_to_shape_modular = [
+    1 2 3 4;   # Community 1
+    2 1 4 3;   # Community 2
+    3 4 1 2;   # Community 3
+    4 3 2 1
+]
 
 sizes_modular = [0.25, 0.25, 0.25, 0.25]
 
-ssm_modular = SSM(θ_modular, block_pair_to_shape_modular,
-    sizes_modular, cumsum(sizes_modular))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Bool, BitMatrix, Vector{Float64}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}([0.9, 0.6, 0.2, 0.05], [1 2 3 4; 2 1 4 3; 3 4 1 2; 4 3 2 1], [0.25, 0.25, 0.25, 0.25], [0.25, 0.5, 0.75, 1.0])</code></pre><p>Visualize:</p><pre><code class="language-julia hljs">fig = Figure(size = (1100, 400))
+ssm_modular =
+    SSM(θ_modular, block_pair_to_shape_modular, sizes_modular, cumsum(sizes_modular))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Bool, BitMatrix, Vector{Float64}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}([0.9, 0.6, 0.2, 0.05], [1 2 3 4; 2 1 4 3; 3 4 1 2; 4 3 2 1], [0.25, 0.25, 0.25, 0.25], [0.25, 0.5, 0.75, 1.0])</code></pre><p>Visualize:</p><pre><code class="language-julia hljs">fig = Figure(size = (1100, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = &quot;Shape Assignment\n(4 communities, 4 shapes)&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = &quot;Probability Matrix&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = &quot;Sampled Graph (n=200)&quot;,
-    aspect = 1)
+ax3 = Axis(fig[1, 3], title = &quot;Sampled Graph (n=200)&quot;, aspect = 1)
 
 heatmap!(ax1, block_pair_to_shape_modular, colormap = :tab10, colorrange = (1, 4))
 
@@ -138,18 +156,20 @@ SBM matrix size: (4, 4)
 SBM parameters: 16 entries</code></pre><p>The SSM and SBM are mathematically equivalent, but the SSM representation is more <strong>compact</strong> and <strong>interpretable</strong> when many block pairs share patterns.</p><h2 id="Decorated-SSMs:-Adding-Edge-Attributes"><a class="docs-heading-anchor" href="#Decorated-SSMs:-Adding-Edge-Attributes">Decorated SSMs: Adding Edge Attributes</a><a id="Decorated-SSMs:-Adding-Edge-Attributes-1"></a><a class="docs-heading-anchor-permalink" href="#Decorated-SSMs:-Adding-Edge-Attributes" title="Permalink"></a></h2><p>Just like SBMs can be decorated with distributions, SSMs can too! This combines parameter efficiency with rich edge attributes.</p><p>Let&#39;s create an SSM with weighted edges:</p><p>Define shape distributions (instead of probabilities):</p><pre><code class="language-julia hljs">θ_weighted = [
     Normal(5.0, 0.5),   # Shape 1: strong positive connections
     Normal(0.0, 0.3),   # Shape 2: weak/zero connections
-    Normal(-2.0, 0.5)   # Shape 3: negative/inhibitory connections
+    Normal(-2.0, 0.5),   # Shape 3: negative/inhibitory connections
 ]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Distributions.Normal{Float64}}:
  Distributions.Normal{Float64}(μ=5.0, σ=0.5)
  Distributions.Normal{Float64}(μ=0.0, σ=0.3)
- Distributions.Normal{Float64}(μ=-2.0, σ=0.5)</code></pre><p>3-block network with signed edges:</p><pre><code class="language-julia hljs">block_pair_to_shape_weighted = [1 2 3;   # Block 1: positive within, weak to 2, negative to 3
-                                2 1 2;   # Block 2: positive within, weak elsewhere
-                                3 2 1]
+ Distributions.Normal{Float64}(μ=-2.0, σ=0.5)</code></pre><p>3-block network with signed edges:</p><pre><code class="language-julia hljs">block_pair_to_shape_weighted = [
+    1 2 3;   # Block 1: positive within, weak to 2, negative to 3
+    2 1 2;   # Block 2: positive within, weak elsewhere
+    3 2 1
+]
 
 sizes_weighted = [0.35, 0.3, 0.35]
 
-ssm_weighted = SSM(θ_weighted, block_pair_to_shape_weighted,
-    sizes_weighted, cumsum(sizes_weighted))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Float64, Matrix{Float64}, Vector{Distributions.Normal{Float64}}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}(Distributions.Normal{Float64}[Distributions.Normal{Float64}(μ=5.0, σ=0.5), Distributions.Normal{Float64}(μ=0.0, σ=0.3), Distributions.Normal{Float64}(μ=-2.0, σ=0.5)], [1 2 3; 2 1 2; 3 2 1], [0.35, 0.3, 0.35], [0.35, 0.6499999999999999, 0.9999999999999999])</code></pre><p>Sample a weighted graph:</p><pre><code class="language-julia hljs">A_weighted = sample_graph(ssm_weighted, 150)
+ssm_weighted =
+    SSM(θ_weighted, block_pair_to_shape_weighted, sizes_weighted, cumsum(sizes_weighted))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Float64, Matrix{Float64}, Vector{Distributions.Normal{Float64}}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}(Distributions.Normal{Float64}[Distributions.Normal{Float64}(μ=5.0, σ=0.5), Distributions.Normal{Float64}(μ=0.0, σ=0.3), Distributions.Normal{Float64}(μ=-2.0, σ=0.5)], [1 2 3; 2 1 2; 3 2 1], [0.35, 0.3, 0.35], [0.35, 0.6499999999999999, 0.9999999999999999])</code></pre><p>Sample a weighted graph:</p><pre><code class="language-julia hljs">A_weighted = sample_graph(ssm_weighted, 150)
 
 println(&quot;Weighted matrix type: &quot;, typeof(A_weighted))
 println(&quot;Matrix size: &quot;, size(A_weighted))
@@ -157,54 +177,51 @@ println(&quot;Value range: [&quot;, minimum(A_weighted), &quot;, &quot;, maximum
 Matrix size: (150, 150)
 Value range: [-3.6264762062670908, 6.883325873524579]</code></pre><p>Visualize the weighted network:</p><pre><code class="language-julia hljs">fig = Figure(size = (1100, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = &quot;Shape Assignment&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = &quot;Shape Distributions\n(means)&quot;,
     xlabel = &quot;Block&quot;,
     ylabel = &quot;Block&quot;,
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = &quot;Sampled Weighted Graph (n=150)&quot;,
-    aspect = 1)
+ax3 = Axis(fig[1, 3], title = &quot;Sampled Weighted Graph (n=150)&quot;, aspect = 1)
 
 heatmap!(ax1, block_pair_to_shape_weighted, colormap = :tab10, colorrange = (1, 3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Makie.Heatmap{Tuple{Makie.EndPoints{Float32}, Makie.EndPoints{Float32}, Matrix{Float32}}}</code></pre><p>Show mean of each distribution</p><pre><code class="language-julia hljs">θ_means = [mean(d) for d in θ_weighted]
-θ_matrix_weighted = [θ_means[block_pair_to_shape_weighted[i, j]]
-                     for i in 1:3, j in 1:3]
-hm_means = heatmap!(ax2, θ_matrix_weighted, colormap = :RdBu,
-    colorrange = (-3, 6))
+θ_matrix_weighted = [θ_means[block_pair_to_shape_weighted[i, j]] for i = 1:3, j = 1:3]
+hm_means = heatmap!(ax2, θ_matrix_weighted, colormap = :RdBu, colorrange = (-3, 6))
 
 hidedecorations!(ax3)
-hm_weights = heatmap!(ax3, A_weighted, colormap = :RdBu,
-    colorrange = (-4, 7))
+hm_weights = heatmap!(ax3, A_weighted, colormap = :RdBu, colorrange = (-4, 7))
 
 Colorbar(fig[1, 4], hm_weights, label = &quot;Edge weight&quot;)
 
 fig</code></pre><img src="608fc969.png" alt="Example block output"/><p><strong>Interpretation</strong>: The SSM creates three distinct types of connections:</p><ul><li>Diagonal (shape 1): Strong positive weights (red)</li><li>Off-diagonal corners (shape 3): Negative weights (blue)</li><li>Other pairs (shape 2): Weak weights (white)</li></ul><h2 id="Example-4:-Degree-Corrected-SSM"><a class="docs-heading-anchor" href="#Example-4:-Degree-Corrected-SSM">Example 4: Degree-Corrected SSM</a><a id="Example-4:-Degree-Corrected-SSM-1"></a><a class="docs-heading-anchor-permalink" href="#Example-4:-Degree-Corrected-SSM" title="Permalink"></a></h2><p>We can create more realistic networks by varying block sizes to simulate degree heterogeneity while keeping the shape structure:</p><p>Same shapes as before, but with very unequal block sizes:</p><pre><code class="language-julia hljs">θ_dc = [0.9, 0.3, 0.05]
-block_pair_to_shape_dc = [1 2 3;
-                          2 1 2;
-                          3 2 1]
+block_pair_to_shape_dc = [
+    1 2 3;
+    2 1 2;
+    3 2 1
+]
 sizes_dc = [0.6, 0.3, 0.1]  # Highly unequal blocks
 
 ssm_dc = SSM(θ_dc, block_pair_to_shape_dc, sizes_dc, cumsum(sizes_dc))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Bool, BitMatrix, Vector{Float64}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}([0.9, 0.3, 0.05], [1 2 3; 2 1 2; 3 2 1], [0.6, 0.3, 0.1], [0.6, 0.8999999999999999, 1.0])</code></pre><p>Compare equal vs unequal sizes:</p><pre><code class="language-julia hljs">fig = Figure(size = (900, 400))
 
-ax1 = Axis(fig[1, 1],
-    title = &quot;Equal Block Sizes\n[0.33, 0.33, 0.33]&quot;,
-    aspect = 1)
+ax1 = Axis(fig[1, 1], title = &quot;Equal Block Sizes\n[0.33, 0.33, 0.33]&quot;, aspect = 1)
 
-ax2 = Axis(fig[1, 2],
-    title = &quot;Unequal Block Sizes\n[0.6, 0.3, 0.1]&quot;,
-    aspect = 1)
+ax2 = Axis(fig[1, 2], title = &quot;Unequal Block Sizes\n[0.6, 0.3, 0.1]&quot;, aspect = 1)
 
 hidedecorations!.([ax1, ax2])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element BitVector:
  0
- 0</code></pre><p>Sample with equal sizes</p><pre><code class="language-julia hljs">ssm_equal = SSM(θ_dc, block_pair_to_shape_dc, [0.33, 0.33, 0.34],
-    cumsum([0.33, 0.33, 0.34]))
+ 0</code></pre><p>Sample with equal sizes</p><pre><code class="language-julia hljs">ssm_equal =
+    SSM(θ_dc, block_pair_to_shape_dc, [0.33, 0.33, 0.34], cumsum([0.33, 0.33, 0.34]))
 A_equal = sample_graph(ssm_equal, 300)
 heatmap!(ax1, A_equal, colormap = :binary)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Makie.Heatmap{Tuple{Makie.EndPoints{Float32}, Makie.EndPoints{Float32}, Matrix{Float32}}}</code></pre><p>Sample with unequal sizes</p><pre><code class="language-julia hljs">A_unequal = sample_graph(ssm_dc, 300)
 heatmap!(ax2, A_unequal, colormap = :binary)
@@ -217,9 +234,8 @@ fig</code></pre><img src="50f30da0.png" alt="Example block output"/><h2 id="Anal
     println(&quot;Number of shapes: &quot;, S)
     println(&quot;\nShape assignments:&quot;)
 
-    for s in 1:S
-        pairs = [(i, j) for i in 1:K for j in 1:K
-                 if ssm.block_pair_to_shape[i, j] == s]
+    for s = 1:S
+        pairs = [(i, j) for i = 1:K for j = 1:K if ssm.block_pair_to_shape[i, j] == s]
         n_pairs = length(pairs)
         println(&quot;\nShape $s (θ = $(ssm.θ[s])):&quot;)
         println(&quot;  Used by $n_pairs block pairs ($(round(100*n_pairs/K^2, digits=1))%)&quot;)
@@ -259,77 +275,88 @@ function w3(x, y)
     return DiscreteNonParametric(0:3, tabulation)
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">w3 (generic function with 1 method)</code></pre><p>Create the decorated graphon:</p><pre><code class="language-julia hljs">graphon_w3 = DecoratedGraphon(w3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DecoratedGraphon{Int64, Matrix{Int64}, typeof(Main.w3), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}}(Main.w3)</code></pre><p>Visualize the four category probabilities:</p><pre><code class="language-julia hljs">fig = Figure(size = (1000, 250))
 
-for i in 1:4
-    ax = Axis(fig[1, i],
-        title = &quot;Category $i&quot;,
-        aspect = 1)
+for i = 1:4
+    ax = Axis(fig[1, i], title = &quot;Category $i&quot;, aspect = 1)
     hidedecorations!(ax)
     hm = heatmap!(ax, graphon_w3, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[1, 5], colormap = :binary, colorrange = (0, 1),
-    label = &quot;Probability&quot;, height = Relative(0.8))
+Colorbar(
+    fig[1, 5],
+    colormap = :binary,
+    colorrange = (0, 1),
+    label = &quot;Probability&quot;,
+    height = Relative(0.8),
+)
 
-fig</code></pre><img src="c35f5475.png" alt="Example block output"/><h3 id="Comparing-SBM-vs-SSM-Approximations"><a class="docs-heading-anchor" href="#Comparing-SBM-vs-SSM-Approximations">Comparing SBM vs SSM Approximations</a><a id="Comparing-SBM-vs-SSM-Approximations-1"></a><a class="docs-heading-anchor-permalink" href="#Comparing-SBM-vs-SSM-Approximations" title="Permalink"></a></h3><pre><code class="language-julia hljs">k = 10</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10</code></pre><p>Create a standard SBM approximation with k=10 blocks:</p><pre><code class="language-julia hljs">sbm_w3 = empirical_graphon(graphon_w3, k)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DecoratedSBM{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}, Matrix{Int64}, Matrix{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}}, Vector{Float64}, Vector{Float64}}(Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}[Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.09399344867091115, 0.09399344867091115, 0.11749023749685668, 0.694522865161321]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.11568105451872908, 0.11568105451872908, 0.15616569878524947, 0.6124721921772922]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2588403746197946, 0.2588403746197946, 0.349426171333799, 0.1328930794266118]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.11568105451872908, 0.11568105451872908, 0.15616569878524947, 0.6124721921772922]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10607996027902702, 0.35307618262717355, 0.15304397130799247, 0.38779988578580693]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.38431100461229367, 0.08273378991798222, 0.4278296043585822, 0.10512560111114182]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.34810443597479224, 0.24942772772556748, 0.3367194011044718, 0.06574843519516833]); … ; Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2588403746197946, 0.2588403746197946, 0.349426171333799, 0.1328930794266118]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.38431100461229367, 0.08273378991798223, 0.4278296043585822, 0.10512560111114182]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.682128970276014, 0.22016474545155387, 0.0954323419246286, 0.0022739423478034767]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8583249103622071, 0.05963937704246795, 0.08051123867863832, 0.0015244739166864606]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.34810443597479224, 0.24942772772556748, 0.3367194011044718, 0.06574843519516833]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8583249103622071, 0.05963937704246795, 0.08051123867863832, 0.0015244739166864606]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8985275315618875, 0.04473505164427972, 0.05591806574224748, 0.0008193510515855016])], [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.10000000000000012], [0.1, 0.2, 0.30000000000000004, 0.4, 0.5, 0.6, 0.7, 0.7999999999999999, 0.8999999999999999, 1.0])</code></pre><p>For the SSM, we&#39;ll use fewer shapes (s=30) than the SBM parameters (k(k+1)/2=120): This demonstrates the parameter efficiency of SSMs. In the <code>Graphons</code> package, to automatically create an SSM from an SBM, we can load the <code>Clustering</code> package and use the <code>SSM</code> constructor:</p><pre><code class="language-julia hljs">using Clustering
+fig</code></pre><img src="c35f5475.png" alt="Example block output"/><h3 id="Comparing-SBM-vs-SSM-Approximations"><a class="docs-heading-anchor" href="#Comparing-SBM-vs-SSM-Approximations">Comparing SBM vs SSM Approximations</a><a id="Comparing-SBM-vs-SSM-Approximations-1"></a><a class="docs-heading-anchor-permalink" href="#Comparing-SBM-vs-SSM-Approximations" title="Permalink"></a></h3><pre><code class="language-julia hljs">k = 10</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10</code></pre><p>Create a standard SBM approximation with k=10 blocks:</p><pre><code class="language-julia hljs">sbm_w3 = discretized_graphon(graphon_w3, k)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DecoratedSBM{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}, Matrix{Int64}, Matrix{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}}, Vector{Float64}, Vector{Float64}}(Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}[Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.09399344867091115, 0.09399344867091115, 0.11749023749685668, 0.694522865161321]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.11568105451872908, 0.11568105451872908, 0.15616569878524947, 0.6124721921772922]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2588403746197946, 0.2588403746197946, 0.349426171333799, 0.1328930794266118]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.11568105451872908, 0.11568105451872908, 0.15616569878524947, 0.6124721921772922]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10607996027902702, 0.35307618262717355, 0.15304397130799247, 0.38779988578580693]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.38431100461229367, 0.08273378991798222, 0.4278296043585822, 0.10512560111114182]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.34810443597479224, 0.24942772772556748, 0.3367194011044718, 0.06574843519516833]); … ; Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2588403746197946, 0.2588403746197946, 0.349426171333799, 0.1328930794266118]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.38431100461229367, 0.08273378991798223, 0.4278296043585822, 0.10512560111114182]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.682128970276014, 0.22016474545155387, 0.0954323419246286, 0.0022739423478034767]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8583249103622071, 0.05963937704246795, 0.08051123867863832, 0.0015244739166864606]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.34810443597479224, 0.24942772772556748, 0.3367194011044718, 0.06574843519516833]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8583249103622071, 0.05963937704246795, 0.08051123867863832, 0.0015244739166864606]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8985275315618875, 0.04473505164427972, 0.05591806574224748, 0.0008193510515855016])], [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.10000000000000012], [0.1, 0.2, 0.30000000000000004, 0.4, 0.5, 0.6, 0.7, 0.7999999999999999, 0.8999999999999999, 1.0])</code></pre><p>For the SSM, we&#39;ll use fewer shapes (s=30) than the SBM parameters (k(k+1)/2=120): This demonstrates the parameter efficiency of SSMs. In the <code>Graphons</code> package, to automatically create an SSM from an SBM, we can load the <code>Clustering</code> package and use the <code>SSM</code> constructor:</p><pre><code class="language-julia hljs">using Clustering
 
 s = 10
 ssm_w3 = SSM(sbm_w3, s)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM{Int64, Matrix{Int64}, Vector{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}}, Matrix{Int64}, Vector{Float64}, Vector{Float64}}(Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}[Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.37701308300949044, 0.057300190569311134, 0.4561196455570192, 0.10956708086417917]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.4524869259329671, 0.37634821303851523, 0.16321442440576264, 0.007950436622755045]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.7969230246086652, 0.10056338589251304, 0.10003532323851312, 0.002478266260308711]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.07289706037797436, 0.7287557657458588, 0.1206950205933855, 0.07765215328278134]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.34512956263361255, 0.24503678429958642, 0.35147280795456637, 0.05836084511223467]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.16160447134760791, 0.22335352693464455, 0.251871544036227, 0.3631704576815205]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2170192049020255, 0.2895571048610721, 0.32996016789075067, 0.16346352234615177]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.18215213268469374, 0.6042038835195751, 0.12730502413200678, 0.08633895966372432]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.5545682296850535, 0.1276056596438109, 0.2951546201342859, 0.022671490536849744]), Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.1158792730696676, 0.1158792730696676, 0.15811410053889863, 0.610127353321766])], [10 10 … 7 5; 10 6 … 1 5; … ; 7 1 … 3 3; 5 5 … 3 3], [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.10000000000000012], [0.1, 0.2, 0.30000000000000004, 0.4, 0.5, 0.6, 0.7, 0.7999999999999999, 0.8999999999999999, 1.0])</code></pre><p>We can now visualize the difference between the SBM and SSM approximations:</p><pre><code class="language-julia hljs">fig = Figure(size = (1000, 500))
 
-for i in 1:4
-    ax = Axis(fig[1:2, i],
-        title = &quot;Category $i&quot;,
-        aspect = 1)
+for i = 1:4
+    ax = Axis(fig[1:2, i], title = &quot;Category $i&quot;, aspect = 1)
     hidedecorations!(ax)
     hm = heatmap!(ax, sbm_w3, k = i, colormap = :binary, colorrange = (0, 1))
-    ax2 = Axis(fig[3:4, i],
-        aspect = 1)
+    ax2 = Axis(fig[3:4, i], aspect = 1)
     hidedecorations!(ax2)
     hm = heatmap!(ax2, ssm_w3, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
-    label = &quot;Probability&quot;, height = Relative(0.8))
+Colorbar(
+    fig[2:3, 5],
+    colormap = :binary,
+    colorrange = (0, 1),
+    label = &quot;Probability&quot;,
+    height = Relative(0.8),
+)
 
 fig</code></pre><img src="0add58e3.png" alt="Example block output"/><p>We can also automatically estimate the optimal number of shapes for the SSM. First let&#39;s build a larger SBM approximation to have a better starting point:</p><pre><code class="language-julia hljs">k_big = 22
-sbm_big = empirical_graphon(graphon_w3, k_big)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DecoratedSBM{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}, Matrix{Int64}, Matrix{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}}, Vector{Float64}, Vector{Float64}}(Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}[Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.09399344867091115, 0.09399344867091115, 0.11749023749685668, 0.694522865161321]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10312775922129815, 0.10312775922129815, 0.13316895992199376, 0.6605755216354099]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2691302009549929, 0.2691302009549929, 0.3475280488531343, 0.11421154923687978]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10312775922129815, 0.10312775922129815, 0.13316895992199376, 0.6605755216354099]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10946593871355442, 0.14109769973160852, 0.14572486320310038, 0.6037114983517368]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3161107879176657, 0.2125966028102219, 0.36979468730413045, 0.10149792196798188]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3064917006623227, 0.2656908817610156, 0.3430868531618862, 0.08473056441477554]); … ; Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2691302009549929, 0.2691302009549929, 0.3475280488531343, 0.11421154923687978]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3161107879176657, 0.2125966028102219, 0.36979468730413045, 0.10149792196798188]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.850920495902962, 0.07266589123892432, 0.07504889931208018, 0.0013647135460335927]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8827614572097703, 0.05069930267605584, 0.06546805105745343, 0.0010711890567205327]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3064917006623227, 0.2656908817610156, 0.3430868531618862, 0.08473056441477554]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8827614572097703, 0.05069930267605584, 0.06546805105745343, 0.0010711890567205327]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8985275315618875, 0.04473505164427972, 0.05591806574224748, 0.0008193510515855016])], [0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456  …  0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.04545454545454557], [0.045454545454545456, 0.09090909090909091, 0.13636363636363635, 0.18181818181818182, 0.2272727272727273, 0.27272727272727276, 0.31818181818181823, 0.3636363636363637, 0.40909090909090917, 0.45454545454545464  …  0.5909090909090909, 0.6363636363636364, 0.6818181818181818, 0.7272727272727272, 0.7727272727272726, 0.818181818181818, 0.8636363636363634, 0.9090909090909088, 0.9545454545454543, 0.9999999999999998])</code></pre><p>Now let&#39;s sample a graph to be able to compute a criterion for model selection:</p><pre><code class="language-julia hljs">latents = collect(rand(Uniform(0, 1), 1000))
-A = sample_graph(graphon_w3, latents);</code></pre><p>We are now ready to estimate the SSM with model selection over a range of shapes:</p><pre><code class="language-julia hljs">shape_range = 1:(k_big * (k_big + 1) ÷ 2 - 1)
-ssm_estimated, criterion_values = Graphons.estimate_ssm(
-    sbm_big, A, latents, shape_range)
+sbm_big = discretized_graphon(graphon_w3, k_big)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DecoratedSBM{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}, Matrix{Int64}, Matrix{Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}}, Vector{Float64}, Vector{Float64}}(Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}[Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.09399344867091115, 0.09399344867091115, 0.11749023749685668, 0.694522865161321]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10312775922129815, 0.10312775922129815, 0.13316895992199376, 0.6605755216354099]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2691302009549929, 0.2691302009549929, 0.3475280488531343, 0.11421154923687978]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10312775922129815, 0.10312775922129815, 0.13316895992199376, 0.6605755216354099]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.10946593871355442, 0.14109769973160852, 0.14572486320310038, 0.6037114983517368]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3161107879176657, 0.2125966028102219, 0.36979468730413045, 0.10149792196798188]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3064917006623227, 0.2656908817610156, 0.3430868531618862, 0.08473056441477554]); … ; Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2691302009549929, 0.2691302009549929, 0.3475280488531343, 0.11421154923687978]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3161107879176657, 0.2125966028102219, 0.36979468730413045, 0.10149792196798188]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.850920495902962, 0.07266589123892432, 0.07504889931208018, 0.0013647135460335927]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8827614572097703, 0.05069930267605584, 0.06546805105745343, 0.0010711890567205327]); Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.2764062879879321, 0.2764062879879321, 0.3455032332628625, 0.1016841907612732]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.3064917006623227, 0.2656908817610156, 0.3430868531618862, 0.08473056441477554]) … Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8827614572097703, 0.05069930267605584, 0.06546805105745343, 0.0010711890567205327]) Distributions.DiscreteNonParametric{Int64, Float64, UnitRange{Int64}, Vector{Float64}}(support=0:3, p=[0.8985275315618875, 0.04473505164427972, 0.05591806574224748, 0.0008193510515855016])], [0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456  …  0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.045454545454545456, 0.04545454545454557], [0.045454545454545456, 0.09090909090909091, 0.13636363636363635, 0.18181818181818182, 0.2272727272727273, 0.27272727272727276, 0.31818181818181823, 0.3636363636363637, 0.40909090909090917, 0.45454545454545464  …  0.5909090909090909, 0.6363636363636364, 0.6818181818181818, 0.7272727272727272, 0.7727272727272726, 0.818181818181818, 0.8636363636363634, 0.9090909090909088, 0.9545454545454543, 0.9999999999999998])</code></pre><p>Now let&#39;s sample a graph to be able to compute a criterion for model selection:</p><pre><code class="language-julia hljs">latents = collect(rand(Uniform(0, 1), 1000))
+A = sample_graph(graphon_w3, latents);</code></pre><p>We are now ready to estimate the SSM with model selection over a range of shapes:</p><pre><code class="language-julia hljs">shape_range = 1:(k_big*(k_big+1)÷2-1)
+ssm_estimated, criterion_values = Graphons.estimate_ssm(sbm_big, A, latents, shape_range)
 index_argmin = argmin(criterion_values)
 k_opt = shape_range[index_argmin]
 println(&quot;Optimal number of shapes selected by argmin: $k_opt&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Optimal number of shapes selected by argmin: 58</code></pre><p>We can plot the BIC values to find the number of shapes that minimizes the criterion:</p><pre><code class="language-julia hljs">fig = Figure(size = (600, 200))
-ax = Axis(fig[1, 1],
-    xlabel = &quot;Number of Shapes&quot;,
-    ylabel = &quot;BIC Value&quot;)
+ax = Axis(fig[1, 1], xlabel = &quot;Number of Shapes&quot;, ylabel = &quot;BIC Value&quot;)
 lines!(ax, shape_range, criterion_values)
-scatter!(ax, [k_opt], [criterion_values[index_argmin]], marker = :rect,
-    color = :red, label = &quot;potential elbow&quot;)
+scatter!(
+    ax,
+    [k_opt],
+    [criterion_values[index_argmin]],
+    marker = :rect,
+    color = :red,
+    label = &quot;potential elbow&quot;,
+)
 fig</code></pre><img src="af701def.png" alt="Example block output"/><p>let&#39;s compare the knee-estimated SSM with the argmin  SSM:</p><pre><code class="language-julia hljs">using Kneedle
-kr = kneedle(shape_range, criterion_values, &quot;convex_dec&quot;, 1, scan_type = :smoothing)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Kneedle.KneedleResult{Int64}([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0  …  243.0, 244.0, 245.0, 246.0, 247.0, 248.0, 249.0, 250.0, 251.0, 252.0], [1.187336634518873e6, 1.1822161487846365e6, 1.1771899476051119e6, 1.1722835293292657e6, 1.1675223923060652e6, 1.1629320348844775e6, 1.1585379554134696e6, 1.1543656522420086e6, 1.150388012553249e6, 1.1465602696348627e6  …  1.110158733925e6, 1.110207699808516e6, 1.1102567423644746e6, 1.1103058613516444e6, 1.110355056528794e6, 1.1104043276546923e6, 1.1104536744881084e6, 1.1105030967878106e6, 1.1105525943125682e6, 1.1106021668213191e6], [33])</code></pre><p>Let&#39;s extract the optimal number of shapes using the Kneedle algorithm:</p><pre><code class="language-julia hljs">k_knee = knees(kr)[1]
+kr = kneedle(shape_range, criterion_values, &quot;convex_dec&quot;, 1, scan_type = :smoothing)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Kneedle.KneedleResult{Int64}([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0  …  243.0, 244.0, 245.0, 246.0, 247.0, 248.0, 249.0, 250.0, 251.0, 252.0], [1.187336634518873e6, 1.1822161487846365e6, 1.1771899476051119e6, 1.1722835293292657e6, 1.1675223923060652e6, 1.1629320348844775e6, 1.1585379554134696e6, 1.1543656522420086e6, 1.150388012553249e6, 1.1465602696348627e6  …  1.1101587339249968e6, 1.1102076998085128e6, 1.1102567423644713e6, 1.1103058613516411e6, 1.1103550565287906e6, 1.110404327654689e6, 1.110453674488105e6, 1.1105030967878073e6, 1.1105525943125647e6, 1.1106021668213191e6], [33])</code></pre><p>Let&#39;s extract the optimal number of shapes using the Kneedle algorithm:</p><pre><code class="language-julia hljs">k_knee = knees(kr)[1]
 println(&quot;Optimal number of shapes selected: $k_knee&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Optimal number of shapes selected: 33</code></pre><p>let&#39;s compare the knee-estimated SSM with the argmin  SSM:</p><pre><code class="language-julia hljs">ssm_knee = SSM(sbm_big, k_knee)
 
 fig = Figure(size = (1000, 500))
 
-for i in 1:4
-    ax = Axis(fig[1:2, i],
-        title = &quot;Category $i&quot;,
-        aspect = 1)
+for i = 1:4
+    ax = Axis(fig[1:2, i], title = &quot;Category $i&quot;, aspect = 1)
     hidedecorations!(ax)
     hm = heatmap!(ax, ssm_estimated, k = i, colormap = :binary, colorrange = (0, 1))
-    ax2 = Axis(fig[3:4, i],
-        aspect = 1)
+    ax2 = Axis(fig[3:4, i], aspect = 1)
     hidedecorations!(ax2)
     hm = heatmap!(ax2, ssm_knee, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
-    label = &quot;Probability&quot;, height = Relative(0.8))
+Colorbar(
+    fig[2:3, 5],
+    colormap = :binary,
+    colorrange = (0, 1),
+    label = &quot;Probability&quot;,
+    height = Relative(0.8),
+)
 
 fig</code></pre><img src="42814608.png" alt="Example block output"/><p>We can also measure the approximation error using mean squared error (MSE):</p><pre><code class="language-julia hljs">sum_squared_errors(x, y) = sum((x .- y) .^ 2)
 function mse(graphon1, graphon2, xs = 0:0.01:1)
     mean(
-        sum_squared_errors(params(graphon1(x, y))[2], params(graphon2(x, y))[2])
-    for x in xs, y in xs)
+        sum_squared_errors(params(graphon1(x, y))[2], params(graphon2(x, y))[2]) for
+        x in xs, y in xs
+    )
 end
 mse_sbm = mse(graphon_w3, sbm_big)
 mse_ssm_estimated = mse(graphon_w3, ssm_estimated)
@@ -347,15 +374,17 @@ end
 s_sbm = k_big * (k_big + 1) ÷ 2
 
 fig = Figure(size = (600, 200))
-ax = Axis(fig[1, 1],
+ax = Axis(
+    fig[1, 1],
     xlabel = &quot;Number of Shapes&quot;,
     ylabel = &quot;Mean Squared Error&quot;,
     yscale = log10,
-    xticks = [0, 33, 58, 100, 200, s_sbm])
+    xticks = [0, 33, 58, 100, 200, s_sbm],
+)
 lines!(ax, 1:s_sbm, mses)
 scatter!(ax, k_knee, mses[k_knee], color = :red, marker = :rect, label = &quot;Elbow&quot;)
 scatter!(ax, k_opt, mses[k_opt], color = :black, marker = :rect, label = &quot;Argmin&quot;)
 scatter!(ax, s_sbm, mses[end], marker = :rect, label = &quot;SBM&quot;)
 
 axislegend(ax)
-fig</code></pre><img src="28bdd209.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03_multiplex_networks/">« Multiplex Networks</a><a class="docs-footer-nextpage" href="../04_custom_distributions/">Custom Distributions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Sunday 16 November 2025 13:52">Sunday 16 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+fig</code></pre><img src="28bdd209.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03_multiplex_networks/">« Multiplex Networks</a><a class="docs-footer-nextpage" href="../04_custom_distributions/">Custom Distributions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Tuesday 6 January 2026 12:49">Tuesday 6 January 2026</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
