@@ -10,7 +10,7 @@ using LinearAlgebra
         f = SimpleContinuousGraphon((x, y) -> min(x, y))
 
         # Discretize to SBM
-        sbm = empirical_graphon(f, 4)
+        sbm = discretized_graphon(f, 4)
         @test sbm isa SBM
 
         # Sample graph
@@ -25,7 +25,7 @@ using LinearAlgebra
         f = DecoratedGraphon((x, y) -> Poisson(5 * x * y))
 
         # Discretize
-        dsbm = empirical_graphon(f, 3)
+        dsbm = discretized_graphon(f, 3)
         @test dsbm isa DecoratedSBM
 
         # Sample

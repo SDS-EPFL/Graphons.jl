@@ -32,16 +32,16 @@ g = SimpleContinuousGraphon((x, y) -> 0.1, SparseMatrixCSC{Bool,Int})
 
 # See Also
 - [`SBM`](@ref): Discrete stochastic block model
-- [`empirical_graphon`](@ref): Discretize a continuous graphon
+- [`discretized_graphon`](@ref): Discretize a continuous graphon
 """
-struct SimpleContinuousGraphon{M, F} <: SimpleGraphon{M}
+struct SimpleContinuousGraphon{M,F} <: SimpleGraphon{M}
     f::F
 end
 
 (g::SimpleContinuousGraphon)(x, y) = g.f(x, y)
 
 function SimpleContinuousGraphon(f::F, M = BitMatrix) where {F}
-    return SimpleContinuousGraphon{M, F}(f)
+    return SimpleContinuousGraphon{M,F}(f)
 end
 
 ## Stochastic Block Models
@@ -81,17 +81,21 @@ sbm = SBM(θ, sizes)
 
 # See Also
 - [`SimpleContinuousGraphon`](@ref): Continuous graphon representation
-- [`empirical_graphon`](@ref): Convert continuous graphon to SBM
+- [`discretized_graphon`](@ref): Convert continuous graphon to SBM
 """
-struct SBM{P <: AbstractMatrix{<:Real}, S, S2} <: AbstractGraphon{Bool, BitMatrix}
+struct SBM{P<:AbstractMatrix{<:Real},S,S2} <: AbstractGraphon{Bool,BitMatrix}
     θ::P
     size::S
     cumsize::S2
 end
 
 function SBM(θ::AbstractMatrix{<:Real}, sizes)
-    @argcheck all(x -> x <= 1 && x >= 0, θ)
-    @argcheck all(sizes .> 0)
+    @inbounds for i in eachindex(θ)
+        @argcheck 0.0 ≤ θ[i] ≤ 1.0
+    end
+    @inbounds for s in sizes
+        @argcheck s >= 0.0
+    end
     cumsizes = cumsum(sizes)
     @argcheck last(cumsizes) ≈ 1
     return SBM(θ, sizes, cumsizes)
@@ -104,7 +108,7 @@ function (g::SBM)(x, y)
 end
 
 """
-    empirical_graphon(f::SimpleContinuousGraphon, k::Int) -> SBM
+    discretized_graphon(f::SimpleContinuousGraphon, k::Int) -> SBM
 
 Discretize a continuous graphon into a Stochastic Block Model with `k` blocks
 by evaluating the graphon at a uniform grid of points.
@@ -122,21 +126,25 @@ An [`SBM`](@ref) with `k` blocks approximating the continuous graphon.
 f = SimpleContinuousGraphon((x, y) -> min(x, y))
 
 # Discretize into 10-block SBM
-sbm = empirical_graphon(f, 10)
+sbm = discretized_graphon(f, 10)
 ```
 
 # See Also
 - [`SimpleContinuousGraphon`](@ref): Continuous graphon type
 - [`SBM`](@ref): Stochastic block model type
 """
-function empirical_graphon(f::SimpleContinuousGraphon, k::Int)
+function discretized_graphon(f::SimpleContinuousGraphon, k::Int)
     ξs = range(0, stop = 1, length = k)
     sizes = fill(1 / k, k)
     # dirty hack to ensure sum(sizes) == 1
     sizes[end] += 1 - sum(sizes)
-    θ = [f(ξs[i], ξs[j]) for i in 1:k, j in 1:k]
+    θ = [f(ξs[i], ξs[j]) for i = 1:k, j = 1:k]
     return SBM(θ, sizes)
 end
+
+
+Base.@deprecate empirical_graphon(f, k) discretized_graphon(f, k)
+
 
 get_theta_matrix(sbm::SBM) = sbm.θ
 params(sbm::SBM) = (sbm.θ, sbm.size)

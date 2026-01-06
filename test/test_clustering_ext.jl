@@ -4,6 +4,7 @@ using Random
 using Distributions
 using Clustering
 
+
 @testset "ClusteringExt" begin
     @testset "SSM from SBM - Basic" begin
         # Create a simple SBM with clear structure
@@ -217,10 +218,10 @@ using Clustering
         ssm = Graphons.SSM(sbm, 4)
         @test ssm isa Graphons.SSM
 
-        @test ssm_ext.num_shapes(sbm) == 6
-        @test ssm_ext.num_shapes(ssm) == 4
-        @test ssm_ext.num_blocks(sbm) == 3
-        @test ssm_ext.num_blocks(ssm) == 3
+        @test num_shapes(sbm) == 6
+        @test num_shapes(ssm) == 4
+        @test num_blocks(sbm) == 3
+        @test num_blocks(ssm) == 3
 
         @test ssm_ext.num_params_per_shape(sbm) == 1
 

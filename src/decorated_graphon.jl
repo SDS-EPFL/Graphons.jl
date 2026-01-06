@@ -1,7 +1,7 @@
 _infer_eltype(d) = eltype(d)
 
 function _infer_eltype(d::MultivariateDistribution)
-    return SizedVector{length(d), eltype(d)}
+    return SizedVector{length(d),eltype(d)}
 end
 
 ## Continuous decorated graphons
@@ -47,20 +47,20 @@ g = DecoratedGraphon((x, y) -> Normal(0, 1), Matrix{Float64})
 - [`DecoratedSBM`](@ref): Block model with distributions
 - [`SimpleContinuousGraphon`](@ref): Simple graphon with probabilities
 """
-struct DecoratedGraphon{T, M, F, D} <: AbstractGraphon{T, M}
+struct DecoratedGraphon{T,M,F,D} <: AbstractGraphon{T,M}
     f::F
 end
 
 function DecoratedGraphon(f::F) where {F}
     d = f(0.1, 0.2)
     T = _infer_eltype(d)
-    return DecoratedGraphon{T, Matrix{T}, F, typeof(d)}(f)
+    return DecoratedGraphon{T,Matrix{T},F,typeof(d)}(f)
 end
 
-function DecoratedGraphon(f::F, ::Type{M}) where {F, M}
+function DecoratedGraphon(f::F, ::Type{M}) where {F,M}
     d = f(0.1, 0.2)
     @argcheck _infer_eltype(d) <: eltype(M)
-    return DecoratedGraphon{eltype(M), M, F, typeof(d)}(f)
+    return DecoratedGraphon{eltype(M),M,F,typeof(d)}(f)
 end
 
 (g::DecoratedGraphon)(x, y) = g.f(x, y)
@@ -107,18 +107,24 @@ dsbm = DecoratedSBM(θ, sizes)
 - [`DecoratedGraphon`](@ref): Continuous decorated graphon
 - [`SBM`](@ref): Simple block model with probabilities
 """
-struct DecoratedSBM{D, M, P <: AbstractMatrix{D}, S, S2} <: AbstractGraphon{eltype(M), M}
+struct DecoratedSBM{D,M,P<:AbstractMatrix{D},S,S2} <: AbstractGraphon{eltype(M),M}
     θ::P
     size::S
     cumsize::S2
 end
 
 function DecoratedSBM(
-        θ::AbstractMatrix{D}, sizes, M = Matrix{_infer_eltype(θ[1, 1])}) where {D}
+    θ::AbstractMatrix{D},
+    sizes,
+    M = Matrix{_infer_eltype(θ[1, 1])},
+) where {D}
     cumsizes = cumsum(sizes)
     @argcheck last(cumsizes) ≈ 1
-    return DecoratedSBM{eltype(θ), M, typeof(θ), typeof(sizes), typeof(cumsizes)}(
-        θ, sizes, cumsizes)
+    return DecoratedSBM{eltype(θ),M,typeof(θ),typeof(sizes),typeof(cumsizes)}(
+        θ,
+        sizes,
+        cumsizes,
+    )
 end
 
 function (g::DecoratedSBM)(x, y)
@@ -128,7 +134,7 @@ function (g::DecoratedSBM)(x, y)
 end
 
 """
-    empirical_graphon(f::DecoratedGraphon, k::Int) -> DecoratedSBM
+    discretized_graphon(f::DecoratedGraphon, k::Int) -> DecoratedSBM
 
 Discretize a continuous decorated graphon into a block model with `k` blocks
 by evaluating the graphon at a uniform grid of points.
@@ -148,19 +154,19 @@ using Distributions
 f = DecoratedGraphon((x, y) -> Normal(x * y, 0.1))
 
 # Discretize into 10-block model
-dsbm = empirical_graphon(f, 10)
+dsbm = discretized_graphon(f, 10)
 ```
 
 # See Also
 - [`DecoratedGraphon`](@ref): Continuous decorated graphon
 - [`DecoratedSBM`](@ref): Block model with distributions
 """
-function empirical_graphon(f::DecoratedGraphon{T, M, F, D}, k::Int) where {T, M, F, D}
+function discretized_graphon(f::DecoratedGraphon{T,M,F,D}, k::Int) where {T,M,F,D}
     ξs = range(0, stop = 1, length = k)
     sizes = fill(1 / k, k)
     # dirty hack to ensure sum(sizes) == 1
     sizes[end] += 1 - sum(sizes)
-    θ = [f(ξs[i], ξs[j]) for i in 1:k, j in 1:k]
+    θ = [f(ξs[i], ξs[j]) for i = 1:k, j = 1:k]
     return DecoratedSBM(θ, sizes, M)
 end
 

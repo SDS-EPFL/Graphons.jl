@@ -86,26 +86,25 @@ labels = [
     "Category 0\n(No edges)",
     "Category 1\n(Layer 1 only)",
     "Category 2\n(Layer 2 only)",
-    "Category 3\n(Both layers)"
+    "Category 3\n(Both layers)",
 ]
 
-for i in 1:4
+for i = 1:4
     row = (i - 1) ÷ 2 + 1
     col = (i - 1) % 2 + 1
 
-    ax = Axis(fig[row, col],
+    ax = Axis(
+        fig[row, col],
         title = labels[i],
         xlabel = "Position x",
         ylabel = "Position y",
-        aspect = 1)
+        aspect = 1,
+    )
 
-    hm = heatmap!(ax, graphon_multiplex, k = i,
-        colormap = :binary,
-        colorrange = (0, 1))
+    hm = heatmap!(ax, graphon_multiplex, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[:, 3], colormap = :binary, colorrange = (0, 1),
-    label = "Probability")
+Colorbar(fig[:, 3], colormap = :binary, colorrange = (0, 1), label = "Probability")
 
 fig
 
@@ -138,9 +137,11 @@ for (idx, (cat, label)) in enumerate(zip(0:3, labels))
     row = (idx - 1) ÷ 2 + 1
     col = (idx - 1) % 2 + 1
 
-    ax = Axis(fig[row, col],
+    ax = Axis(
+        fig[row, col],
         title = label * " (n=$(count(==(cat), A_categories)))",
-        aspect = 1)
+        aspect = 1,
+    )
     hidedecorations!(ax)
 
     A_binary = zeros(Bool, n, n)
@@ -171,12 +172,8 @@ println("Overlap (both layers): ", sum(A_layer1 .& A_layer2) / (n^2) * 100, "%")
 
 fig = Figure(size = (900, 400))
 
-ax1 = Axis(fig[1, 1],
-    title = "Layer 1 (Distance-based)",
-    aspect = 1)
-ax2 = Axis(fig[1, 2],
-    title = "Layer 2 (Periodic)",
-    aspect = 1)
+ax1 = Axis(fig[1, 1], title = "Layer 1 (Distance-based)", aspect = 1)
+ax2 = Axis(fig[1, 2], title = "Layer 2 (Periodic)", aspect = 1)
 
 hidedecorations!(ax1)
 hidedecorations!(ax2)
@@ -224,24 +221,30 @@ corr = [correlation_matrix(graphon_mvb(x, y))[1, 2] for x in x_range, y in x_ran
 
 fig = Figure(size = (900, 350))
 
-ax1 = Axis(fig[1, 1],
-    title = "P(Layer 1 edge)",
-    aspect = 1)
-ax2 = Axis(fig[1, 2],
-    title = "P(Layer 2 edge)",
-    aspect = 1)
-ax3 = Axis(fig[1, 3],
-    title = "Correlation",
-    aspect = 1)
+ax1 = Axis(fig[1, 1], title = "P(Layer 1 edge)", aspect = 1)
+ax2 = Axis(fig[1, 2], title = "P(Layer 2 edge)", aspect = 1)
+ax3 = Axis(fig[1, 3], title = "Correlation", aspect = 1)
 hidedecorations!.([ax1, ax2, ax3])
 hm1 = heatmap!(ax1, p1, colormap = :binary, colorrange = (0, 1))
 hm2 = heatmap!(ax2, p2, colormap = :binary, colorrange = (0, 1))
 hm3 = heatmap!(ax3, corr, colormap = :RdBu, colorrange = (-1, 1))
 
-Colorbar(fig[2, 1:2], hm1, vertical = false,
-    label = "Probability", width = Relative(0.6), flipaxis = false)
-Colorbar(fig[2, 3], hm3, vertical = false,
-    label = "Correlation", width = Relative(0.9), flipaxis = false)
+Colorbar(
+    fig[2, 1:2],
+    hm1,
+    vertical = false,
+    label = "Probability",
+    width = Relative(0.6),
+    flipaxis = false,
+)
+Colorbar(
+    fig[2, 3],
+    hm3,
+    vertical = false,
+    label = "Correlation",
+    width = Relative(0.9),
+    flipaxis = false,
+)
 
 fig
 
@@ -256,7 +259,7 @@ fig
 # Just like simple graphons, we can discretize decorated graphons into
 # block models for computational efficiency:
 
-sbm_multiplex = empirical_graphon(graphon_mvb, 10)
+sbm_multiplex = discretized_graphon(graphon_mvb, 10)
 
 println("Block model type: ", typeof(sbm_multiplex))
 println("Number of blocks: ", length(sbm_multiplex.size))
@@ -270,7 +273,7 @@ A_sbm = sample_graph(sbm_multiplex, 200);
 # - **Multiplex networks** can be modeled with discrete distributions over edge categories
 # - Category probabilities can encode complex layer interactions
 # - We can analyze marginal probabilities and correlations between layers
-# - All the same tools work: `rand`, `sample_graph`, `empirical_graphon`
+# - All the same tools work: `rand`, `sample_graph`, `discretized_graphon`
 # - The `MVBernoulli` package helps analyze correlations in binary multiplex networks
 #
 # ## Extensions

@@ -23,7 +23,7 @@ sample_graph
 ## Utility Functions
 
 ```@docs
-empirical_graphon
+discretized_graphon
 ```
 
 ## Index

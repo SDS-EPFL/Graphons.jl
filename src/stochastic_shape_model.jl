@@ -4,31 +4,62 @@
 A Stochastic Shape Model (SSM) is an extension of the Stochastic Block Model (SBM). See
 [verdeyme_hybrid_2024](@cite) for details.
 """
-struct SSM{T, M, V, B, S, S2} <: AbstractGraphon{T, M}
+struct SSM{T,M,V,B,S,S2} <: AbstractGraphon{T,M}
     θ::V
     block_pair_to_shape::B
     size::S
     cumsize::S2
 
     function SSM(
-            θ::AbstractVector{<:Real}, block_pair_to_shape, sizes, cumsizes, M = BitMatrix)
+        θ::AbstractVector{<:Real},
+        block_pair_to_shape,
+        sizes,
+        cumsizes,
+        M = BitMatrix,
+    )
         @argcheck size(block_pair_to_shape, 1) == size(block_pair_to_shape, 2)
         @argcheck length(sizes) == size(block_pair_to_shape, 1)
         @argcheck all(sizes .> 0)
         @argcheck last(cumsizes) ≈ 1
-        return new{Bool, M, typeof(θ), typeof(block_pair_to_shape),
-            typeof(sizes), typeof(cumsizes)}(θ, block_pair_to_shape, sizes, cumsizes)
+        return new{
+            Bool,
+            M,
+            typeof(θ),
+            typeof(block_pair_to_shape),
+            typeof(sizes),
+            typeof(cumsizes),
+        }(
+            θ,
+            block_pair_to_shape,
+            sizes,
+            cumsizes,
+        )
     end
 
-    function SSM(θ::AbstractVector{D}, block_pair_to_shape,
-            sizes, cumsizes, M = Matrix{_infer_eltype(first(θ))}) where {D}
+    function SSM(
+        θ::AbstractVector{D},
+        block_pair_to_shape,
+        sizes,
+        cumsizes,
+        M = Matrix{_infer_eltype(first(θ))},
+    ) where {D}
         @argcheck size(block_pair_to_shape, 1) == size(block_pair_to_shape, 2)
         @argcheck length(sizes) == size(block_pair_to_shape, 1)
         @argcheck all(sizes .> 0)
         @argcheck last(cumsizes) ≈ 1
-        return new{eltype(D), M, typeof(θ),
-            typeof(block_pair_to_shape), typeof(sizes), typeof(cumsizes)}(
-            θ, block_pair_to_shape, sizes, cumsizes)
+        return new{
+            eltype(D),
+            M,
+            typeof(θ),
+            typeof(block_pair_to_shape),
+            typeof(sizes),
+            typeof(cumsizes),
+        }(
+            θ,
+            block_pair_to_shape,
+            sizes,
+            cumsizes,
+        )
     end
 end
 
@@ -40,33 +71,33 @@ end
 
 function get_theta_matrix(ssm::SSM)
     K = length(ssm.size)
-    θ_matrix = Array{eltype(ssm.θ), 2}(undef, K, K)
-    for i in 1:K
-        for j in 1:K
+    θ_matrix = Array{eltype(ssm.θ),2}(undef, K, K)
+    for i = 1:K
+        for j = 1:K
             θ_matrix[i, j] = ssm.θ[ssm.block_pair_to_shape[i, j]]
         end
     end
     return θ_matrix
 end
 
-function convert_to_sbm(ssm::SSM{Bool, M}) where {M}
+function convert_to_sbm(ssm::SSM{Bool,M}) where {M}
     K = length(ssm.size)
     D = eltype(ssm.θ)
-    θ_matrix = Array{D, 2}(undef, K, K)
-    for i in 1:K
-        for j in 1:K
+    θ_matrix = Array{D,2}(undef, K, K)
+    for i = 1:K
+        for j = 1:K
             θ_matrix[i, j] = ssm.θ[ssm.block_pair_to_shape[i, j]]
         end
     end
     return SBM(θ_matrix, ssm.size)
 end
 
-function convert_to_sbm(ssm::SSM{T, M, V, B, S, S2}) where {T, M, V, B, S, S2}
+function convert_to_sbm(ssm::SSM{T,M,V,B,S,S2}) where {T,M,V,B,S,S2}
     K = length(ssm.size)
     D = eltype(ssm.θ)
-    θ_matrix = Array{D, 2}(undef, K, K)
-    for i in 1:K
-        for j in 1:K
+    θ_matrix = Array{D,2}(undef, K, K)
+    for i = 1:K
+        for j = 1:K
             θ_matrix[i, j] = ssm.θ[ssm.block_pair_to_shape[i, j]]
         end
     end
@@ -78,13 +109,12 @@ function estimate_ssm end
 
 function _extract_params_triu(sbm::SBM)
     K = length(sbm.size)
-    return reduce(hcat, sbm.θ[row, col] for col in 1:K for row in 1:col)
+    return reduce(hcat, sbm.θ[row, col] for col = 1:K for row = 1:col)
 end
 
 function _extract_params_triu(dsbm::DecoratedSBM)
     K = length(dsbm.size)
-    return reduce(
-        hcat, _extract_param(dsbm.θ[row, col], :) for col in 1:K for row in 1:col)
+    return reduce(hcat, _extract_param(dsbm.θ[row, col], :) for col = 1:K for row = 1:col)
 end
 
 function convert_to_params(centers, ::SBM)
@@ -96,9 +126,19 @@ function convert_to_params(centers, ::DecoratedSBM{D}) where {D}
 end
 
 # specialization for DiscreteNonParametric as it requires support to be specified
-function convert_to_params(centers,
-        sbm::DecoratedSBM{DiscreteNonParametric{T, P, Ts, Ps}}) where {T, P, Ts, Ps}
+function convert_to_params(
+    centers,
+    sbm::DecoratedSBM{DiscreteNonParametric{T,P,Ts,Ps}},
+) where {T,P,Ts,Ps}
     s = support(sbm.θ[1, 1])
-    return [DiscreteNonParametric{T, P, Ts, Ps}(s, convert(Ps, centers[:, i]))
-            for i in axes(centers, 2)]
+    return [
+        DiscreteNonParametric{T,P,Ts,Ps}(s, convert(Ps, centers[:, i])) for
+        i in axes(centers, 2)
+    ]
 end
+
+
+function num_shapes(ssm::SSM)
+    return length(ssm.θ)
+end
+num_shapes(sbm::SBM) = div(size(sbm.θ, 1) * (size(sbm.θ, 1) + 1), 2)

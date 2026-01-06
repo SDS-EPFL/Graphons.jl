@@ -72,13 +72,17 @@ Random.seed!(42)
 # Using only **2 shapes** instead of 9 SBM parameters:
 
 # Define the shapes:
-θ = [0.8,  # Shape 1: high probability (within-block)
-    0.1]  # Shape 2: low probability (between-block)
+θ = [
+    0.8,  # Shape 1: high probability (within-block)
+    0.1,
+]  # Shape 2: low probability (between-block)
 
 # Assign shapes to block pairs:
-block_pair_to_shape = [1 2 2;   # Block 1: high within, low to others
-                       2 1 2;   # Block 2: high within, low to others
-                       2 2 1]   # Block 3: high within, low to others
+block_pair_to_shape = [
+    1 2 2;   # Block 1: high within, low to others
+    2 1 2;   # Block 2: high within, low to others
+    2 2 1
+]   # Block 3: high within, low to others
 
 # Block sizes:
 sizes = [0.3, 0.4, 0.3]
@@ -90,21 +94,23 @@ ssm_simple = SSM(θ, block_pair_to_shape, sizes, cumsum(sizes))
 
 fig = Figure(size = (900, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = "Shape Assignment Matrix\n(which shape for each block pair)",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = "Equivalent Block Probability Matrix\n(θ values)",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = "Sampled Graph (n=200)",
-    aspect = 1)
+ax3 = Axis(fig[1, 3], title = "Sampled Graph (n=200)", aspect = 1)
 
 # Visualize shape assignments
 heatmap!(ax1, block_pair_to_shape)
@@ -134,17 +140,21 @@ fig
 #
 # We'll use only **3 shapes**:
 
-θ_hier = [0.9,  # Shape 1: dense (core-core)
+θ_hier = [
+    0.9,  # Shape 1: dense (core-core)
     0.5,  # Shape 2: medium (core-periphery)
-    0.1]  # Shape 3: sparse (periphery-periphery)
+    0.1,
+]  # Shape 3: sparse (periphery-periphery)
 
 # Create the shape assignment matrix for hierarchical structure:
-block_pair_to_shape_hier = [1 1 2 2 2 2;   # Core block 1
-                            1 1 2 2 2 2;   # Core block 2
-                            2 2 3 3 3 3;   # Periphery block 1
-                            2 2 3 3 3 3;   # Periphery block 2
-                            2 2 3 3 3 3;   # Periphery block 3
-                            2 2 3 3 3 3]
+block_pair_to_shape_hier = [
+    1 1 2 2 2 2;   # Core block 1
+    1 1 2 2 2 2;   # Core block 2
+    2 2 3 3 3 3;   # Periphery block 1
+    2 2 3 3 3 3;   # Periphery block 2
+    2 2 3 3 3 3;   # Periphery block 3
+    2 2 3 3 3 3
+]
 
 sizes_hier = [0.15, 0.15, 0.175, 0.175, 0.175, 0.175]  # Core smaller than periphery
 
@@ -154,21 +164,23 @@ ssm_hier = SSM(θ_hier, block_pair_to_shape_hier, sizes_hier, cumsum(sizes_hier)
 
 fig = Figure(size = (1100, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = "Shape Assignment Matrix\n(6 blocks, 3 shapes)",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = "Equivalent 6×6 Probability Matrix",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = "Sampled Graph (n=300)",
-    aspect = 1)
+ax3 = Axis(fig[1, 3], title = "Sampled Graph (n=300)", aspect = 1)
 
 heatmap!(ax1, block_pair_to_shape_hier, colormap = :tab10, colorrange = (1, 3))
 
@@ -196,40 +208,46 @@ fig
 #
 # Using **4 shapes**:
 
-θ_modular = [0.9,  # Shape 1: within-community
+θ_modular = [
+    0.9,  # Shape 1: within-community
     0.6,  # Shape 2: within-module, between-community
     0.2,  # Shape 3: between-module
-    0.05] # Shape 4: no connection (rare edges)
+    0.05,
+] # Shape 4: no connection (rare edges)
 
-block_pair_to_shape_modular = [1 2 3 4;   # Community 1
-                               2 1 4 3;   # Community 2
-                               3 4 1 2;   # Community 3
-                               4 3 2 1]
+block_pair_to_shape_modular = [
+    1 2 3 4;   # Community 1
+    2 1 4 3;   # Community 2
+    3 4 1 2;   # Community 3
+    4 3 2 1
+]
 
 sizes_modular = [0.25, 0.25, 0.25, 0.25]
 
-ssm_modular = SSM(θ_modular, block_pair_to_shape_modular,
-    sizes_modular, cumsum(sizes_modular))
+ssm_modular =
+    SSM(θ_modular, block_pair_to_shape_modular, sizes_modular, cumsum(sizes_modular))
 
 # Visualize:
 
 fig = Figure(size = (1100, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = "Shape Assignment\n(4 communities, 4 shapes)",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = "Probability Matrix",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = "Sampled Graph (n=200)",
-    aspect = 1)
+ax3 = Axis(fig[1, 3], title = "Sampled Graph (n=200)", aspect = 1)
 
 heatmap!(ax1, block_pair_to_shape_modular, colormap = :tab10, colorrange = (1, 4))
 
@@ -273,18 +291,20 @@ println("SBM parameters: ", length(sbm_from_ssm.θ), " entries")
 θ_weighted = [
     Normal(5.0, 0.5),   # Shape 1: strong positive connections
     Normal(0.0, 0.3),   # Shape 2: weak/zero connections
-    Normal(-2.0, 0.5)   # Shape 3: negative/inhibitory connections
+    Normal(-2.0, 0.5),   # Shape 3: negative/inhibitory connections
 ]
 
 # 3-block network with signed edges:
-block_pair_to_shape_weighted = [1 2 3;   # Block 1: positive within, weak to 2, negative to 3
-                                2 1 2;   # Block 2: positive within, weak elsewhere
-                                3 2 1]
+block_pair_to_shape_weighted = [
+    1 2 3;   # Block 1: positive within, weak to 2, negative to 3
+    2 1 2;   # Block 2: positive within, weak elsewhere
+    3 2 1
+]
 
 sizes_weighted = [0.35, 0.3, 0.35]
 
-ssm_weighted = SSM(θ_weighted, block_pair_to_shape_weighted,
-    sizes_weighted, cumsum(sizes_weighted))
+ssm_weighted =
+    SSM(θ_weighted, block_pair_to_shape_weighted, sizes_weighted, cumsum(sizes_weighted))
 
 # Sample a weighted graph:
 A_weighted = sample_graph(ssm_weighted, 150)
@@ -297,34 +317,33 @@ println("Value range: [", minimum(A_weighted), ", ", maximum(A_weighted), "]")
 
 fig = Figure(size = (1100, 400))
 
-ax1 = Axis(fig[1, 1],
+ax1 = Axis(
+    fig[1, 1],
     title = "Shape Assignment",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax2 = Axis(fig[1, 2],
+ax2 = Axis(
+    fig[1, 2],
     title = "Shape Distributions\n(means)",
     xlabel = "Block",
     ylabel = "Block",
-    aspect = 1)
+    aspect = 1,
+)
 
-ax3 = Axis(fig[1, 3],
-    title = "Sampled Weighted Graph (n=150)",
-    aspect = 1)
+ax3 = Axis(fig[1, 3], title = "Sampled Weighted Graph (n=150)", aspect = 1)
 
 heatmap!(ax1, block_pair_to_shape_weighted, colormap = :tab10, colorrange = (1, 3))
 
 # Show mean of each distribution
 θ_means = [mean(d) for d in θ_weighted]
-θ_matrix_weighted = [θ_means[block_pair_to_shape_weighted[i, j]]
-                     for i in 1:3, j in 1:3]
-hm_means = heatmap!(ax2, θ_matrix_weighted, colormap = :RdBu,
-    colorrange = (-3, 6))
+θ_matrix_weighted = [θ_means[block_pair_to_shape_weighted[i, j]] for i = 1:3, j = 1:3]
+hm_means = heatmap!(ax2, θ_matrix_weighted, colormap = :RdBu, colorrange = (-3, 6))
 
 hidedecorations!(ax3)
-hm_weights = heatmap!(ax3, A_weighted, colormap = :RdBu,
-    colorrange = (-4, 7))
+hm_weights = heatmap!(ax3, A_weighted, colormap = :RdBu, colorrange = (-4, 7))
 
 Colorbar(fig[1, 4], hm_weights, label = "Edge weight")
 
@@ -342,9 +361,11 @@ fig
 
 # Same shapes as before, but with very unequal block sizes:
 θ_dc = [0.9, 0.3, 0.05]
-block_pair_to_shape_dc = [1 2 3;
-                          2 1 2;
-                          3 2 1]
+block_pair_to_shape_dc = [
+    1 2 3;
+    2 1 2;
+    3 2 1
+]
 sizes_dc = [0.6, 0.3, 0.1]  # Highly unequal blocks
 
 ssm_dc = SSM(θ_dc, block_pair_to_shape_dc, sizes_dc, cumsum(sizes_dc))
@@ -353,19 +374,15 @@ ssm_dc = SSM(θ_dc, block_pair_to_shape_dc, sizes_dc, cumsum(sizes_dc))
 
 fig = Figure(size = (900, 400))
 
-ax1 = Axis(fig[1, 1],
-    title = "Equal Block Sizes\n[0.33, 0.33, 0.33]",
-    aspect = 1)
+ax1 = Axis(fig[1, 1], title = "Equal Block Sizes\n[0.33, 0.33, 0.33]", aspect = 1)
 
-ax2 = Axis(fig[1, 2],
-    title = "Unequal Block Sizes\n[0.6, 0.3, 0.1]",
-    aspect = 1)
+ax2 = Axis(fig[1, 2], title = "Unequal Block Sizes\n[0.6, 0.3, 0.1]", aspect = 1)
 
 hidedecorations!.([ax1, ax2])
 
 # Sample with equal sizes
-ssm_equal = SSM(θ_dc, block_pair_to_shape_dc, [0.33, 0.33, 0.34],
-    cumsum([0.33, 0.33, 0.34]))
+ssm_equal =
+    SSM(θ_dc, block_pair_to_shape_dc, [0.33, 0.33, 0.34], cumsum([0.33, 0.33, 0.34]))
 A_equal = sample_graph(ssm_equal, 300)
 heatmap!(ax1, A_equal, colormap = :binary)
 
@@ -387,9 +404,8 @@ function analyze_shape_assignments(ssm)
     println("Number of shapes: ", S)
     println("\nShape assignments:")
 
-    for s in 1:S
-        pairs = [(i, j) for i in 1:K for j in 1:K
-                 if ssm.block_pair_to_shape[i, j] == s]
+    for s = 1:S
+        pairs = [(i, j) for i = 1:K for j = 1:K if ssm.block_pair_to_shape[i, j] == s]
         n_pairs = length(pairs)
         println("\nShape $s (θ = $(ssm.θ[s])):")
         println("  Used by $n_pairs block pairs ($(round(100*n_pairs/K^2, digits=1))%)")
@@ -441,16 +457,19 @@ graphon_w3 = DecoratedGraphon(w3)
 
 fig = Figure(size = (1000, 250))
 
-for i in 1:4
-    ax = Axis(fig[1, i],
-        title = "Category $i",
-        aspect = 1)
+for i = 1:4
+    ax = Axis(fig[1, i], title = "Category $i", aspect = 1)
     hidedecorations!(ax)
     hm = heatmap!(ax, graphon_w3, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[1, 5], colormap = :binary, colorrange = (0, 1),
-    label = "Probability", height = Relative(0.8))
+Colorbar(
+    fig[1, 5],
+    colormap = :binary,
+    colorrange = (0, 1),
+    label = "Probability",
+    height = Relative(0.8),
+)
 
 fig
 
@@ -459,7 +478,7 @@ fig
 k = 10
 
 # Create a standard SBM approximation with k=10 blocks:
-sbm_w3 = empirical_graphon(graphon_w3, k)
+sbm_w3 = discretized_graphon(graphon_w3, k)
 
 # For the SSM, we'll use fewer shapes (s=30) than the SBM parameters (k(k+1)/2=120):
 # This demonstrates the parameter efficiency of SSMs.
@@ -474,20 +493,22 @@ ssm_w3 = SSM(sbm_w3, s)
 
 fig = Figure(size = (1000, 500))
 
-for i in 1:4
-    ax = Axis(fig[1:2, i],
-        title = "Category $i",
-        aspect = 1)
+for i = 1:4
+    ax = Axis(fig[1:2, i], title = "Category $i", aspect = 1)
     hidedecorations!(ax)
     hm = heatmap!(ax, sbm_w3, k = i, colormap = :binary, colorrange = (0, 1))
-    ax2 = Axis(fig[3:4, i],
-        aspect = 1)
+    ax2 = Axis(fig[3:4, i], aspect = 1)
     hidedecorations!(ax2)
     hm = heatmap!(ax2, ssm_w3, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
-    label = "Probability", height = Relative(0.8))
+Colorbar(
+    fig[2:3, 5],
+    colormap = :binary,
+    colorrange = (0, 1),
+    label = "Probability",
+    height = Relative(0.8),
+)
 
 fig
 
@@ -495,7 +516,7 @@ fig
 # a larger SBM approximation to have a better starting point:
 
 k_big = 22
-sbm_big = empirical_graphon(graphon_w3, k_big)
+sbm_big = discretized_graphon(graphon_w3, k_big)
 
 # Now let's sample a graph to be able to compute a criterion for model selection:
 
@@ -504,21 +525,24 @@ A = sample_graph(graphon_w3, latents);
 
 # We are now ready to estimate the SSM with model selection over a range of shapes:
 
-shape_range = 1:(k_big * (k_big + 1) ÷ 2 - 1)
-ssm_estimated, criterion_values = Graphons.estimate_ssm(
-    sbm_big, A, latents, shape_range)
+shape_range = 1:(k_big*(k_big+1)÷2-1)
+ssm_estimated, criterion_values = Graphons.estimate_ssm(sbm_big, A, latents, shape_range)
 index_argmin = argmin(criterion_values)
 k_opt = shape_range[index_argmin]
 println("Optimal number of shapes selected by argmin: $k_opt")
 
 # We can plot the BIC values to find the number of shapes that minimizes the criterion:
 fig = Figure(size = (600, 200))
-ax = Axis(fig[1, 1],
-    xlabel = "Number of Shapes",
-    ylabel = "BIC Value")
+ax = Axis(fig[1, 1], xlabel = "Number of Shapes", ylabel = "BIC Value")
 lines!(ax, shape_range, criterion_values)
-scatter!(ax, [k_opt], [criterion_values[index_argmin]], marker = :rect,
-    color = :red, label = "potential elbow")
+scatter!(
+    ax,
+    [k_opt],
+    [criterion_values[index_argmin]],
+    marker = :rect,
+    color = :red,
+    label = "potential elbow",
+)
 fig
 
 # let's compare the knee-estimated SSM with the argmin  SSM:
@@ -534,20 +558,22 @@ ssm_knee = SSM(sbm_big, k_knee)
 
 fig = Figure(size = (1000, 500))
 
-for i in 1:4
-    ax = Axis(fig[1:2, i],
-        title = "Category $i",
-        aspect = 1)
+for i = 1:4
+    ax = Axis(fig[1:2, i], title = "Category $i", aspect = 1)
     hidedecorations!(ax)
     hm = heatmap!(ax, ssm_estimated, k = i, colormap = :binary, colorrange = (0, 1))
-    ax2 = Axis(fig[3:4, i],
-        aspect = 1)
+    ax2 = Axis(fig[3:4, i], aspect = 1)
     hidedecorations!(ax2)
     hm = heatmap!(ax2, ssm_knee, k = i, colormap = :binary, colorrange = (0, 1))
 end
 
-Colorbar(fig[2:3, 5], colormap = :binary, colorrange = (0, 1),
-    label = "Probability", height = Relative(0.8))
+Colorbar(
+    fig[2:3, 5],
+    colormap = :binary,
+    colorrange = (0, 1),
+    label = "Probability",
+    height = Relative(0.8),
+)
 
 fig
 
@@ -556,8 +582,9 @@ fig
 sum_squared_errors(x, y) = sum((x .- y) .^ 2)
 function mse(graphon1, graphon2, xs = 0:0.01:1)
     mean(
-        sum_squared_errors(params(graphon1(x, y))[2], params(graphon2(x, y))[2])
-    for x in xs, y in xs)
+        sum_squared_errors(params(graphon1(x, y))[2], params(graphon2(x, y))[2]) for
+        x in xs, y in xs
+    )
 end
 mse_sbm = mse(graphon_w3, sbm_big)
 mse_ssm_estimated = mse(graphon_w3, ssm_estimated)
@@ -576,11 +603,13 @@ end
 s_sbm = k_big * (k_big + 1) ÷ 2
 
 fig = Figure(size = (600, 200))
-ax = Axis(fig[1, 1],
+ax = Axis(
+    fig[1, 1],
     xlabel = "Number of Shapes",
     ylabel = "Mean Squared Error",
     yscale = log10,
-    xticks = [0, 33, 58, 100, 200, s_sbm])
+    xticks = [0, 33, 58, 100, 200, s_sbm],
+)
 lines!(ax, 1:s_sbm, mses)
 scatter!(ax, k_knee, mses[k_knee], color = :red, marker = :rect, label = "Elbow")
 scatter!(ax, k_opt, mses[k_opt], color = :black, marker = :rect, label = "Argmin")

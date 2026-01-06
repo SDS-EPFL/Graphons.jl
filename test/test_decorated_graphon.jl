@@ -18,9 +18,9 @@ using Distributions
         @test h(0.5, 0.5) isa MvNormal
     end
 
-    @testset "empirical_graphon from decorated" begin
+    @testset "discretized_graphon from decorated" begin
         f = DecoratedGraphon((x, y) -> Bernoulli(x * y))
-        sbm = empirical_graphon(f, 3)
+        sbm = discretized_graphon(f, 3)
 
         @test sbm isa DecoratedSBM
         @test size(sbm.θ) == (3, 3)
@@ -29,7 +29,7 @@ using Distributions
 
     @testset "Accessors" begin
         f = DecoratedGraphon((x, y) -> Normal(x + y, 0.1))
-        sbm = empirical_graphon(f, 10)
+        sbm = discretized_graphon(f, 10)
 
         @test Graphons.get_theta_matrix(sbm) == sbm.θ
         @test params(sbm)[1] == params.(sbm.θ)
