@@ -29,6 +29,7 @@ Distributions = "0.25.0"
 SpecialFunctions = "2.6.1"
 StaticArrays = "1.9.15"
 StatsAPI = "1.7.1"
+SuiteSparseGraphBLAS = "0.11"
 julia = "1.10"
 
 [extras]
